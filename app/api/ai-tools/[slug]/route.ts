@@ -1,35 +1,38 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
 const GET_AI_TOOL = gql`
-  query GetAITool($slug: ID!) {
-    aiTool(id: $slug, idType: SLUG) {
-      id
-      title
-      content
-      excerpt
-      slug
-      aiToolCategories {
-        nodes {
-          name
-          slug
-        }
+query GetAITool($slug: ID!) {
+  aiTool(id: $slug, idType: SLUG) {
+    id
+    title
+    content
+    excerpt
+    slug
+    aiToolMeta {
+      toolUrl
+    }
+    aiToolCategories {
+      nodes {
+        name
+        slug
       }
-      featuredImage {
-        node {
-          sourceUrl
-        }
+    }
+    featuredImage {
+      node {
+        sourceUrl
       }
     }
   }
+}
 `
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug
+  const slug = params.slug;
 
   try {
     const { data } = await client.query({
