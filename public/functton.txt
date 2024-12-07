@@ -1,0 +1,182 @@
+<?php
+// Register AI Tools Custom Post Type
+function register_ai_tool_post_type() {
+    $labels = array(
+        'name'                  => _x( 'AI Tools', 'Post Type General Name', 'text_domain' ),
+        'singular_name'         => _x( 'AI Tool', 'Post Type Singular Name', 'text_domain' ),
+        'menu_name'             => __( 'AI Tools', 'text_domain' ),
+        'name_admin_bar'        => __( 'AI Tool', 'text_domain' ),
+        'archives'              => __( 'AI Tool Archives', 'text_domain' ),
+        'attributes'            => __( 'AI Tool Attributes', 'text_domain' ),
+        'parent_item_colon'     => __( 'Parent AI Tool:', 'text_domain' ),
+        'all_items'             => __( 'All AI Tools', 'text_domain' ),
+        'add_new_item'          => __( 'Add New AI Tool', 'text_domain' ),
+        'add_new'               => __( 'Add New', 'text_domain' ),
+        'new_item'              => __( 'New AI Tool', 'text_domain' ),
+        'edit_item'             => __( 'Edit AI Tool', 'text_domain' ),
+        'update_item'           => __( 'Update AI Tool', 'text_domain' ),
+        'view_item'             => __( 'View AI Tool', 'text_domain' ),
+        'view_items'            => __( 'View AI Tools', 'text_domain' ),
+        'search_items'          => __( 'Search AI Tool', 'text_domain' ),
+        'not_found'             => __( 'Not found', 'text_domain' ),
+        'not_found_in_trash'    => __( 'Not found in Trash', 'text_domain' ),
+        'featured_image'        => __( 'Featured Image', 'text_domain' ),
+        'set_featured_image'    => __( 'Set featured image', 'text_domain' ),
+        'remove_featured_image' => __( 'Remove featured image', 'text_domain' ),
+        'use_featured_image'    => __( 'Use as featured image', 'text_domain' ),
+        'insert_into_item'      => __( 'Insert into AI Tool', 'text_domain' ),
+        'uploaded_to_this_item' => __( 'Uploaded to this AI Tool', 'text_domain' ),
+        'items_list'            => __( 'AI Tools list', 'text_domain' ),
+        'items_list_navigation' => __( 'AI Tools list navigation', 'text_domain' ),
+        'filter_items_list'     => __( 'Filter AI Tools list', 'text_domain' ),
+    );
+    $args = array(
+        'label'                 => __( 'AI Tool', 'text_domain' ),
+        'description'           => __( 'AI Tools Directory', 'text_domain' ),
+        'labels'                => $labels,
+        'supports'              => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields' ),
+        'taxonomies'            => array( 'ai_tool_category' ), // Explicitly define the taxonomy relationship
+        'hierarchical'          => false,
+        'public'                => true,
+        'show_ui'              => true,
+        'show_in_menu'         => true,
+        'menu_position'        => 5,
+        'menu_icon'            => 'dashicons-admin-generic',
+        'show_in_admin_bar'    => true,
+        'show_in_nav_menus'    => true,
+        'can_export'           => true,
+        'has_archive'          => true,
+        'exclude_from_search'  => false,
+        'publicly_queryable'   => true,
+        'capability_type'      => 'post',
+        'show_in_rest'         => true,
+        'show_in_graphql'      => true,
+        'graphql_single_name'  => 'aiTool',
+        'graphql_plural_name'  => 'aiTools',
+    );
+    register_post_type( 'ai_tool', $args );
+}
+add_action( 'init', 'register_ai_tool_post_type', 0 );
+
+// Register AI Tool Category taxonomy
+function register_ai_tool_category_taxonomy() {
+    $labels = array(
+        'name'                       => _x( 'AI Tool Categories', 'Taxonomy General Name', 'text_domain' ),
+        'singular_name'              => _x( 'AI Tool Category', 'Taxonomy Singular Name', 'text_domain' ),
+        'menu_name'                  => __( 'Categories', 'text_domain' ),
+        'all_items'                  => __( 'All Categories', 'text_domain' ),
+        'parent_item'                => __( 'Parent Category', 'text_domain' ),
+        'parent_item_colon'          => __( 'Parent Category:', 'text_domain' ),
+        'new_item_name'              => __( 'New Category Name', 'text_domain' ),
+        'add_new_item'               => __( 'Add New Category', 'text_domain' ),
+        'edit_item'                  => __( 'Edit Category', 'text_domain' ),
+        'update_item'                => __( 'Update Category', 'text_domain' ),
+        'view_item'                  => __( 'View Category', 'text_domain' ),
+        'separate_items_with_commas' => __( 'Separate categories with commas', 'text_domain' ),
+        'add_or_remove_items'        => __( 'Add or remove categories', 'text_domain' ),
+        'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+        'popular_items'              => __( 'Popular Categories', 'text_domain' ),
+        'search_items'               => __( 'Search Categories', 'text_domain' ),
+        'not_found'                  => __( 'Not Found', 'text_domain' ),
+        'no_terms'                   => __( 'No categories', 'text_domain' ),
+        'items_list'                 => __( 'Categories list', 'text_domain' ),
+        'items_list_navigation'      => __( 'Categories list navigation', 'text_domain' ),
+    );
+    $args = array(
+        'labels'                     => $labels,
+        'hierarchical'               => true,
+        'public'                     => true,
+        'show_ui'                    => true,
+        'show_admin_column'          => true,
+        'show_in_nav_menus'          => true,
+        'show_tagcloud'              => true,
+        'show_in_rest'               => true,
+        'show_in_graphql'            => true,
+        'graphql_single_name'        => 'aiToolCategory',
+        'graphql_plural_name'        => 'aiToolCategories',
+        'show_in_graphql_admin_menu' => true, // Add this line
+        'rewrite'                    => array(
+            'slug'                   => 'ai-tool-category',
+            'with_front'             => true,
+            'hierarchical'           => true,
+        ),
+    );
+    register_taxonomy( 'ai_tool_category', array( 'ai_tool' ), $args );
+}
+add_action( 'init', 'register_ai_tool_category_taxonomy', 0 );
+
+// Register custom fields for AI Tools
+function register_ai_tool_meta_fields() {
+    register_post_meta('ai_tool', 'tool_url', array(
+        'type' => 'string',
+        'description' => 'URL of the AI Tool',
+        'single' => true,
+        'show_in_rest' => true,
+        'show_in_graphql' => true,
+    ));
+    register_post_meta('ai_tool', 'pricing_model', array(
+        'type' => 'string',
+        'description' => 'Pricing model of the AI Tool',
+        'single' => true,
+        'show_in_rest' => true,
+        'show_in_graphql' => true,
+    ));
+    register_post_meta('ai_tool', 'rating', array(
+        'type' => 'number',
+        'description' => 'Rating of the AI Tool',
+        'single' => true,
+        'show_in_rest' => true,
+        'show_in_graphql' => true,
+    ));
+}
+add_action('init', 'register_ai_tool_meta_fields');
+
+// Register the taxonomy for GraphQL
+add_filter('graphql_register_types', function($type_registry) {
+    register_graphql_connection([
+        'fromType' => 'RootQuery',
+        'toType' => 'AiTool',
+        'fromFieldName' => 'aiToolsByCategory',
+        'connectionArgs' => [
+            'category' => [
+                'type' => 'String',
+                'description' => 'Category slug',
+            ],
+        ],
+        'resolve' => function($source, $args, $context, $info) {
+            $category = $args['category'] ?? '';
+            $query_args = [
+                'post_type' => 'ai_tool',
+                'tax_query' => [
+                    [
+                        'taxonomy' => 'ai_tool_category',
+                        'field' => 'slug',
+                        'terms' => $category,
+                    ],
+                ],
+            ];
+            
+            return (new WPGraphQL\Data\Connection\PostObjectConnectionResolver($source, $args, $context, $info, 'ai_tool'))
+                ->set_query_arg('tax_query', $query_args['tax_query'])
+                ->get_connection();
+        },
+    ]);
+});
+
+// Add GraphQL support for the taxonomy
+add_filter('register_taxonomy_args', function($args, $taxonomy) {
+    if ('ai_tool_category' === $taxonomy) {
+        $args['show_in_graphql'] = true;
+        $args['graphql_single_name'] = 'aiToolCategory';
+        $args['graphql_plural_name'] = 'aiToolCategories';
+    }
+    return $args;
+}, 10, 2);
+
+// Flush rewrite rules on theme switch
+function custom_flush_rewrite_rules() {
+    global $wp_rewrite;
+    $wp_rewrite->flush_rules();
+}
+add_action('after_switch_theme', 'custom_flush_rewrite_rules');
+

@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    domains: ['new.codewp.in', 'localhost'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'new.codewp.in',
+        pathname: '/wp-content/uploads/**',
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig
+
