@@ -18,7 +18,7 @@ const navItems = [
   { name: "Submit AI Tool", href: "/submit" },
 ]
 
-const MotionDialogContent = motion(
+const MotionDialogContent = motion.create(
   forwardRef<HTMLDivElement, ComponentPropsWithoutRef<typeof Dialog.Content>>(
     (props, ref) => <Dialog.Content ref={ref} {...props} />
   )
@@ -37,12 +37,12 @@ export function SiteNav() {
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src="/placeholder.svg"
-              alt="Geekdroid"
+              alt="FindMyAITool"
               width={40}
               height={40}
               className="rounded-full"
             />
-            <span className="text-xl font-bold text-white">Geekdroid</span>
+            <span className="text-xl font-bold text-white">findmyaitool</span>
           </Link>
           <nav className="hidden md:flex flex-1 items-center justify-center">
             <div className="flex items-center space-x-6">
@@ -94,12 +94,12 @@ export function SiteNav() {
                   <Link href="/" className="flex items-center space-x-2" onClick={() => setIsOpen(false)}>
                     <Image
                       src="/placeholder.svg"
-                      alt="Geekdroid"
+                      alt="FindMyAITool"
                       width={40}
                       height={40}
                       className="rounded-full"
                     />
-                    <span className="text-xl font-bold text-white">Geekdroid</span>
+                    <span className="text-xl font-bold text-white">findmyaitool</span>
                   </Link>
                   <Dialog.Close asChild>
                     <Button variant="ghost" size="icon">

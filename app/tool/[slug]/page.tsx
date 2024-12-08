@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button"
-import { Bookmark, ChevronRight, ExternalLink } from 'lucide-react'
+import { ExternalLink, ChevronRight } from 'lucide-react'
 import Link from "next/link"
 import Image from "next/image"
 import ApolloWrapper from '@/components/ApolloWrapper'
 import { notFound } from 'next/navigation'
+import { ToolSidebar } from '@/components/tool-sidebar'
 
 interface AIToolCategory {
   name: string;
@@ -46,6 +47,12 @@ export default async function ToolPage({ params }: PageProps) {
     notFound()
   }
 
+  // Function to remove "Read more" link from excerpt
+  const cleanExcerpt = (excerpt: string) => {
+    return excerpt.replace(/<a\s+[^>]*>Read more<\/a>/i, '').trim();
+  }
+
+
   return (
     <ApolloWrapper>
       <div className="min-h-screen bg-black text-white">
@@ -70,43 +77,27 @@ export default async function ToolPage({ params }: PageProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="md:col-span-2">
-              <div className="flex items-start space-x-6 mb-8">
-                <div className="w-24 h-24 relative flex-shrink-0">
-                  <Image
-                    src={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                    alt={tool.title}
-                    fill
-                    className="rounded-lg object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-2">{tool.title}</h1>
-                  <div className="flex items-center space-x-4 mb-4">
-                    {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes.map((category) => (
-                      <Link 
-                        key={category.slug}
-                        href={`/category/${category.slug}`}
-                        className="bg-purple-900 text-white text-xs font-semibold px-3 py-1 rounded-full hover:bg-purple-800 transition-colors"
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
-                  {tool.excerpt && (
-                    <div className="text-gray-300 mb-4" dangerouslySetInnerHTML={{ __html: tool.excerpt }} />
-                  )}
-                  <div className="flex items-center space-x-4">
-                    <Button className="bg-purple-600 hover:bg-purple-700">
-                      Explore Website
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" className="border-gray-700">
-                      <Bookmark className="mr-2 h-4 w-4" />
-                      <span>Save</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
+              {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
+                <Link 
+                  href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
+                  className="inline-block bg-purple-900 text-white text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-800 transition-colors mb-6"
+                >
+                  {tool.aiToolCategories.nodes[0].name}
+                </Link>
+              )}
+
+              {tool.excerpt && (
+                <div 
+                  className="text-gray-300 mb-8 text-lg" 
+                  dangerouslySetInnerHTML={{ __html: cleanExcerpt(tool.excerpt) }} 
+                />
+              )}
+
+              <Button className="bg-purple-600 hover:bg-purple-700 mb-8">
+                Explore Website
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
 
               {/* Tool Preview */}
               {tool.featuredImage && tool.featuredImage.node && tool.featuredImage.node.sourceUrl && (
@@ -127,32 +118,9 @@ export default async function ToolPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Featured Tools Sidebar */}
+            {/* Sidebar */}
             <div className="md:col-span-1">
-              <h2 className="text-2xl font-bold mb-6">Featured AI Tools</h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Link
-                    key={i}
-                    href={`/tool/featured-${i}`}
-                    className="block p-4 rounded-lg border border-gray-800 hover:bg-gray-900 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <Image
-                        src="/placeholder.svg"
-                        alt={`Featured Tool ${i}`}
-                        width={50}
-                        height={50}
-                        className="rounded-lg"
-                      />
-                      <div>
-                        <h3 className="font-semibold">Featured Tool {i}</h3>
-                        <p className="text-sm text-gray-400">Category</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <ToolSidebar toolName={tool.title} toolSlug={tool.slug} />
             </div>
           </div>
         </main>
@@ -160,3 +128,4 @@ export default async function ToolPage({ params }: PageProps) {
     </ApolloWrapper>
   )
 }
+

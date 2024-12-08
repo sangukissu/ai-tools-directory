@@ -30,8 +30,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
 
-  console.log('API Route: Fetching AI Tools for category:', category)
-
   if (!category) {
     return NextResponse.json({ error: 'Category parameter is required' }, { status: 400 })
   }
@@ -43,17 +41,12 @@ export async function GET(request: Request) {
       fetchPolicy: 'no-cache'
     })
 
-    console.log('API Route: Raw GraphQL response:', JSON.stringify(data, null, 2))
-
     if (!data.aiToolCategories || !data.aiToolCategories.nodes || data.aiToolCategories.nodes.length === 0) {
-      console.log('API Route: No category found with slug:', category)
       return NextResponse.json({ error: 'Category not found' }, { status: 404 })
     }
 
     const categoryData = data.aiToolCategories.nodes[0]
     const tools = categoryData.aiTools.nodes
-
-    console.log(`API Route: Found ${tools.length} tools for category "${categoryData.name}"`)
 
     const transformedData = {
       category: {
