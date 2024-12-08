@@ -36,12 +36,11 @@ async function getAITool(slug: string): Promise<AITool | null> {
 }
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }
 
 export default async function ToolPage({ params }: PageProps) {
-  const { slug } = await params;
-  const tool = await getAITool(slug)
+  const tool = await getAITool(params.slug)
 
   if (!tool) {
     notFound()

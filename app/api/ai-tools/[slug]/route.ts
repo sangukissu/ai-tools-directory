@@ -10,9 +10,6 @@ const GET_AI_TOOL = gql`
       content
       excerpt
       slug
-      aiToolMeta {
-        toolUrl
-      }
       aiToolCategories {
         nodes {
           name
@@ -29,10 +26,10 @@ const GET_AI_TOOL = gql`
 `
 
 export async function GET(
-  request: NextRequest, 
+  req: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = params;
+  const slug = params.slug;
 
   try {
     const { data } = await client.query({
@@ -46,7 +43,8 @@ export async function GET(
 
     return NextResponse.json(data.aiTool)
   } catch (error) {
-    console.error('Error fetching AI Tool:', error)
+    console.error('Error fetching AI Tool:', JSON.stringify(error, null, 2))
     return NextResponse.json({ error: 'Failed to fetch AI Tool' }, { status: 500 })
   }
 }
+
