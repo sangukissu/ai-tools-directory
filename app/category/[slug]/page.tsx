@@ -40,33 +40,31 @@ async function getAIToolsByCategory(category: string): Promise<AIToolsResponse> 
     `${apiUrl}/api/ai-tools?first=12&category=${encodeURIComponent(category)}`,
     { next: { revalidate: 3600 } }
   )
-  
+
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`)
   }
-  
+
   const data = await res.json()
   return data
 }
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { slug } = await params;
   let aiToolsData: AIToolsResponse;
-  
+
   try {
-    aiToolsData = await getAIToolsByCategory(slug)
+    aiToolsData = await getAIToolsByCategory(params.slug)
   } catch (error) {
     console.error('Error fetching category data:', error)
     notFound()
   }
 
   // Format the category name for display
-  const formattedCategoryName = slug
-    .replace('ai_tool_category/', '')
+  const formattedCategoryName = params.slug
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')

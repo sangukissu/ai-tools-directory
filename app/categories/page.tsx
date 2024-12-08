@@ -22,7 +22,10 @@ const categoryIcons = {
 
 async function getCategories() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-  const res = await fetch(`${apiUrl}/api/categories`, { next: { revalidate: 3600 } })
+  const res = await fetch(`${apiUrl}/api/categories`, { 
+    cache: 'no-store',
+    next: { revalidate: 0 }
+  })
   
   if (!res.ok) {
     throw new Error('Failed to fetch categories')

@@ -4,7 +4,7 @@ import client from '@/lib/apollo-client'
 
 const GET_CATEGORIES = gql`
   query GetCategories {
-    aiToolCategories {
+    aiToolCategories(first: 100) {
       nodes {
         id
         name
@@ -20,6 +20,7 @@ export async function GET() {
   try {
     const { data } = await client.query({
       query: GET_CATEGORIES,
+      fetchPolicy: 'network-only', // This ensures we always fetch from the network
     })
 
     return NextResponse.json(data.aiToolCategories)
