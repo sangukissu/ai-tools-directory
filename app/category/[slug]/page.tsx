@@ -122,4 +122,3 @@ export default async function CategoryPage({ params }: PageProps) {
     </ApolloWrapper>
   )
 }
-
