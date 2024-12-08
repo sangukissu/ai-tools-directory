@@ -25,10 +25,7 @@ interface AITool {
 }
 
 interface AIToolsResponse {
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor: string;
-  };
+  category: AIToolCategory;
   edges: {
     node: AITool;
   }[];
@@ -36,17 +33,22 @@ interface AIToolsResponse {
 
 async function getAIToolsByCategory(category: string): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  console.log('Fetching tools for category:', category);
+  
   const res = await fetch(
-    `${apiUrl}/api/ai-tools?first=12&category=${encodeURIComponent(category)}`,
-    { next: { revalidate: 3600 } }
+    `${apiUrl}/api/ai-tools?category=${encodeURIComponent(category)}`,
+    { cache: 'no-store' }
   )
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`)
+    const errorText = await res.text();
+    console.error('API Response:', errorText);
+    throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
 
-  const data = await res.json()
-  return data
+  const data = await res.json();
+  console.log('Fetched data for category:', category, JSON.stringify(data, null, 2));
+  return data;
 }
 
 interface PageProps {
@@ -57,22 +59,13 @@ export default async function CategoryPage({ params }: PageProps) {
   let aiToolsData: AIToolsResponse;
 
   try {
-    aiToolsData = await getAIToolsByCategory(params.slug)
+    aiToolsData = await getAIToolsByCategory(params.slug);
   } catch (error) {
-    console.error('Error fetching category data:', error)
-    notFound()
+    console.error('Error fetching category data:', error);
+    notFound();
   }
 
-  // Format the category name for display
-  const formattedCategoryName = params.slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-
-  // If we have data, use the actual category name from the first tool
-  const categoryName = 
-    aiToolsData.edges[0]?.node.aiToolCategories.nodes[0]?.name || 
-    formattedCategoryName
+  const categoryName = aiToolsData.category.name;
 
   return (
     <ApolloWrapper>
@@ -89,7 +82,7 @@ export default async function CategoryPage({ params }: PageProps) {
           <div className="max-w-screen-2xl mx-auto">
             <h1 className="text-3xl font-bold text-white mb-8">{categoryName} AI Tools</h1>
             
-            {aiToolsData.edges.length === 0 ? (
+            {!aiToolsData.edges || aiToolsData.edges.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-400 text-lg">
                   No tools found in this category yet.
@@ -107,7 +100,7 @@ export default async function CategoryPage({ params }: PageProps) {
                   <ToolCard
                     key={tool.id}
                     title={tool.title}
-                    category={tool.aiToolCategories.nodes[0]?.name || categoryName}
+                    category={categoryName}
                     slug={tool.slug}
                     previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
                     logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
