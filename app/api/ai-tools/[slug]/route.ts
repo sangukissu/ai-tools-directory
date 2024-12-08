@@ -3,35 +3,35 @@ import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
 const GET_AI_TOOL = gql`
-query GetAITool($slug: ID!) {
-  aiTool(id: $slug, idType: SLUG) {
-    id
-    title
-    content
-    excerpt
-    slug
-    aiToolMeta {
-      toolUrl
-    }
-    aiToolCategories {
-      nodes {
-        name
-        slug
+  query GetAITool($slug: ID!) {
+    aiTool(id: $slug, idType: SLUG) {
+      id
+      title
+      content
+      excerpt
+      slug
+      aiToolMeta {
+        toolUrl
       }
-    }
-    featuredImage {
-      node {
-        sourceUrl
+      aiToolCategories {
+        nodes {
+          name
+          slug
+        }
+      }
+      featuredImage {
+        node {
+          sourceUrl
+        }
       }
     }
   }
-}
 `
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
-) {
+): Promise<NextResponse> {
   const slug = params.slug;
 
   try {
