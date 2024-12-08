@@ -29,10 +29,10 @@ const GET_AI_TOOL = gql`
 `
 
 export async function GET(
-  request: NextRequest,
+  request: NextRequest, 
   { params }: { params: { slug: string } }
-): Promise<NextResponse> {
-  const slug = params.slug;
+) {
+  const { slug } = params;
 
   try {
     const { data } = await client.query({
@@ -50,4 +50,3 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch AI Tool' }, { status: 500 })
   }
 }
-
