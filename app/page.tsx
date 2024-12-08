@@ -43,12 +43,17 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
   url.searchParams.append('first', first.toString());
   if (after) url.searchParams.append('after', after);
   
+  // Add a default category or fetch all categories
+  url.searchParams.append('category', 'all');
+
   const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
   return res.json();
 }
+
+
 
 export default async function Home() {
   let aiToolsData: AIToolsResponse | null = null;

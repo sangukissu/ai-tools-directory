@@ -25,6 +25,7 @@ interface AITool {
       sourceUrl: string;
     };
   };
+  affiliateLink?: string;
 }
 
 async function getAITool(slug: string): Promise<AITool | null> {
@@ -51,7 +52,6 @@ export default async function ToolPage({ params }: PageProps) {
   const cleanExcerpt = (excerpt: string) => {
     return excerpt.replace(/<a\s+[^>]*>Read more<\/a>/i, '').trim();
   }
-
 
   return (
     <ApolloWrapper>
@@ -94,14 +94,19 @@ export default async function ToolPage({ params }: PageProps) {
                 />
               )}
 
-              <Button className="bg-purple-600 hover:bg-purple-700 mb-8">
+              <Link 
+                href={tool.affiliateLink || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-purple-600 text-primary-foreground shadow hover:bg-purple-700 h-9 px-4 py-2"
+              >
                 Explore Website
                 <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
+              </Link>
 
               {/* Tool Preview */}
               {tool.featuredImage && tool.featuredImage.node && tool.featuredImage.node.sourceUrl && (
-                <div className="rounded-lg overflow-hidden border border-gray-800 mb-8">
+                <div className="rounded-lg overflow-hidden border border-gray-800 mb-8 mt-8">
                   <Image
                     src={tool.featuredImage.node.sourceUrl}
                     alt={`${tool.title} Preview`}
@@ -114,7 +119,7 @@ export default async function ToolPage({ params }: PageProps) {
 
               {/* Tool Content */}
               {tool.content && (
-                <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: tool.content }} />
+                <div className="prose prose-invert max-w-none mt-8" dangerouslySetInnerHTML={{ __html: tool.content }} />
               )}
             </div>
 
