@@ -45,9 +45,6 @@ async function getAITool(slug: string): Promise<AITool | null> {
     `${apiUrl}/api/ai-tools/${slug}?t=${timestamp}`, 
     { 
       cache: 'no-store', // Disable caching completely
-      next: { 
-        revalidate: 0 // Disable Next.js cache
-      }
     }
   )
   if (!res.ok) {
@@ -55,6 +52,8 @@ async function getAITool(slug: string): Promise<AITool | null> {
   }
   return res.json()
 }
+
+
 
 interface PageProps {
   params: { slug: string }
