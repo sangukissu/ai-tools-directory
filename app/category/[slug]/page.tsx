@@ -33,18 +33,21 @@ interface AIToolsResponse {
 
 async function getAIToolsByCategory(category: string): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const url = new URL(`${apiUrl}/api/ai-tools`);
-  url.searchParams.append('category', category);
-
-  const res = await fetch(url.toString(), { 
-    next: { revalidate: 60 }, // Cache for 1 minute
-  });
+  const res = await fetch(
+    `${apiUrl}/api/ai-tools?category=${encodeURIComponent(category)}`,
+    { next: { revalidate: 3600 } }
+  )
 
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
 
   const data = await res.json();
+  
+  if (!data.category) {
+    throw new Error('Category not found');
+  }
+
   return data;
 }
 
