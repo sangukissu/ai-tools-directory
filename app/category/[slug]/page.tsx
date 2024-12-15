@@ -29,29 +29,22 @@ interface AIToolsResponse {
   edges: {
     node: AITool;
   }[];
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor: string;
-  };
 }
 
 async function getAIToolsByCategory(category: string): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const res = await fetch(
-    `${apiUrl}/api/ai-tools?category=${encodeURIComponent(category)}`,
-    { cache: 'no-store' }
-  )
+  const url = new URL(`${apiUrl}/api/ai-tools`);
+  url.searchParams.append('category', category);
+
+  const res = await fetch(url.toString(), { 
+    next: { revalidate: 60 }, // Cache for 1 minute
+  });
 
   if (!res.ok) {
-    const errorText = await res.text();
-    console.error('API Response:', errorText);
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
 
   const data = await res.json();
-  if (!data.category) {
-    throw new Error('Category not found');
-  }
   return data;
 }
 
@@ -66,17 +59,7 @@ export default async function CategoryPage({ params }: PageProps) {
     aiToolsData = await getAIToolsByCategory(params.slug);
   } catch (error) {
     console.error('Error fetching category data:', error);
-    if (error instanceof Error && error.message === 'Category not found') {
-      notFound();
-    }
-    return (
-      <div className="min-h-screen bg-black text-white">
-        <main className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold mb-4">Error</h1>
-          <p>Failed to load category data. Please try again later.</p>
-        </main>
-      </div>
-    );
+    notFound();
   }
 
   const categoryName = aiToolsData.category.name;
