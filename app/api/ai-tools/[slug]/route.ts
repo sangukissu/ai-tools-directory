@@ -24,6 +24,7 @@ query GetAITool($slug: ID!) {
     }
     affiliateLink
     modifiedGmt
+    pricing
   }
 }
 `

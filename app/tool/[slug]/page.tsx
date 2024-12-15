@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/accordion"
 import { ToolCard } from "@/components/tool-card"
 import { PromoteTool } from "@/components/promote-tool";
+import { PricingInfo } from "@/components/pricing-info"
 
 interface AIToolCategory {
   name: string;
@@ -37,6 +38,7 @@ interface AITool {
   };
   affiliateLink?: string;
   modifiedGmt: string;
+  pricing?: any; // Add pricing field to AITool interface
 }
 
 interface RelatedTool {
@@ -191,6 +193,8 @@ export default async function ToolPage({ params }: { params: { slug: string } })
                       dangerouslySetInnerHTML={{ __html: cleanExcerpt(tool.excerpt) }} 
                     />
                   )}
+
+                  {tool.pricing && <PricingInfo pricing={tool.pricing} />}
 
                   {tool.affiliateLink ? (
                     <Link 
