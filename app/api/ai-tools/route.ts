@@ -4,6 +4,10 @@ import client from '@/lib/apollo-client'
 
 const GET_AI_TOOLS = gql`
   query GetAITools($first: Int!, $after: String, $category: String) {
+    aiToolCategory(id: $category, idType: SLUG) {
+      name
+      slug
+    }
     aiTools(first: $first, after: $after, where: { categoryName: $category }) {
       pageInfo {
         hasNextPage
@@ -49,7 +53,11 @@ export async function GET(request: Request) {
       fetchPolicy: 'no-cache'
     })
 
-    return NextResponse.json(data.aiTools)
+    return NextResponse.json({
+      category: data.aiToolCategory,
+      edges: data.aiTools.edges,
+      pageInfo: data.aiTools.pageInfo
+    })
   } catch (error) {
     console.error('Error fetching AI Tools:', error)
     return NextResponse.json(
