@@ -2,13 +2,9 @@ import { NextResponse } from 'next/server'
 import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
-const GET_AI_TOOLS = gql`
-  query GetAITools($first: Int!, $after: String, $category: ID) {
-    aiToolCategory(id: $category, idType: SLUG) {
-      name
-      slug
-    }
-    aiTools(first: $first, after: $after, where: { categoryIn: [$category] }) {
+const GET_ALL_AI_TOOLS = gql`
+  query GetAllAITools($first: Int!, $after: String) {
+    aiTools(first: $first, after: $after) {
       pageInfo {
         hasNextPage
         endCursor
@@ -30,7 +26,6 @@ const GET_AI_TOOLS = gql`
               sourceUrl
             }
           }
-          affiliateLink
         }
       }
     }
@@ -39,25 +34,20 @@ const GET_AI_TOOLS = gql`
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const first = parseInt(searchParams.get('first') || '10', 10)
+  const first = parseInt(searchParams.get('first') || '100', 10)
   const after = searchParams.get('after')
-  const category = searchParams.get('category')
 
   try {
     const { data } = await client.query({
-      query: GET_AI_TOOLS,
+      query: GET_ALL_AI_TOOLS,
       variables: { 
-        first, 
-        after, 
-        category: category || null 
+        first,
+        after
       },
       fetchPolicy: 'no-cache'
     })
 
-    return NextResponse.json({
-      category: data.aiToolCategory,
-      aiTools: data.aiTools
-    })
+    return NextResponse.json(data.aiTools)
   } catch (error) {
     console.error('Error fetching AI Tools:', error)
     return NextResponse.json(
