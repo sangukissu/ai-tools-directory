@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/accordion"
 import { ToolCard } from "@/components/tool-card"
 import { PromoteTool } from "@/components/promote-tool";
-import { Badge } from "@/components/ui/badge"
 
 interface AIToolCategory {
   name: string;
@@ -38,7 +37,6 @@ interface AITool {
   };
   affiliateLink?: string;
   modifiedGmt: string;
-  pricing?: string;
 }
 
 interface RelatedTool {
@@ -153,19 +151,6 @@ export default async function ToolPage({ params }: { params: { slug: string } })
     }
   }
 
-  const getPricingColor = (pricing: string) => {
-    switch (pricing.toLowerCase()) {
-      case 'free':
-        return 'bg-green-500 hover:bg-green-600';
-      case 'paid':
-        return 'bg-blue-500 hover:bg-blue-600';
-      case 'freemium':
-        return 'bg-purple-500 hover:bg-purple-600';
-      default:
-        return 'bg-gray-500 hover:bg-gray-600';
-    }
-  };
-
   return (
     <ApolloWrapper>
       <div className="min-h-screen bg-black text-white">
@@ -191,21 +176,14 @@ export default async function ToolPage({ params }: { params: { slug: string } })
               <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
                 <div className="mb-8">
                   <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
-                  <div className="flex items-center space-x-4 mb-6">
-                    {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
-                      <Link 
-                        href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
-                        className="inline-block text-white text-sm font-semibold px-3 py-1 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90"
-                      >
-                        {tool.aiToolCategories.nodes[0].name}
-                      </Link>
-                    )}
-                    {tool.pricing && (
-                      <Badge className={`text-white ${getPricingColor(tool.pricing)}`}>
-                        {tool.pricing}
-                      </Badge>
-                    )}
-                  </div>
+                  {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
+                    <Link 
+                      href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
+                      className="inline-block text-white text-sm font-semibold px-3 py-1 rounded-md transition-colors mb-6 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90"
+                    >
+                      {tool.aiToolCategories.nodes[0].name}
+                    </Link>
+                  )}
 
                   {tool.excerpt && (
                     <div 
