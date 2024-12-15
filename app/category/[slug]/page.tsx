@@ -6,6 +6,7 @@ import TryAgainButton from '@/components/TryAgainButton'
 import SubmitToolButton from '@/components/SubmitToolButton'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import { notFound } from 'next/navigation'
 
 interface AIToolCategory {
   name: string;
@@ -28,13 +29,16 @@ interface AITool {
 }
 
 interface AIToolsResponse {
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor: string;
+  category: AIToolCategory;
+  aiTools: {
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string;
+    };
+    edges: {
+      node: AITool;
+    }[];
   };
-  edges: {
-    node: AITool;
-  }[];
 }
 
 async function getAIToolsByCategory(category: string, first: number = 12, after: string | null = null): Promise<AIToolsResponse> {
@@ -45,9 +49,15 @@ async function getAIToolsByCategory(category: string, first: number = 12, after:
   url.searchParams.append('category', category);
 
   const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  
+  if (res.status === 404) {
+    notFound();
+  }
+  
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
+  
   return res.json();
 }
 
@@ -66,7 +76,11 @@ export default async function CategoryPage({ params }: PageProps) {
     console.error('Error fetching AI Tools:', error);
   }
 
-  const categoryName = aiToolsData?.edges[0]?.node.aiToolCategories.nodes[0]?.name || params.slug;
+  if (!aiToolsData || !aiToolsData.category) {
+    return notFound();
+  }
+
+  const categoryName = aiToolsData.category.name;
 
   return (
     <ApolloWrapper>
@@ -97,7 +111,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 </AlertDescription>
                 <TryAgainButton />
               </Alert>
-            ) : !aiToolsData || !aiToolsData.edges || aiToolsData.edges.length === 0 ? (
+            ) : !aiToolsData.aiTools.edges || aiToolsData.aiTools.edges.length === 0 ? (
               <Alert className="bg-yellow-900 border-yellow-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>No AI Tools Found</AlertTitle>
@@ -108,7 +122,7 @@ export default async function CategoryPage({ params }: PageProps) {
               </Alert>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {aiToolsData.edges.map(({ node: tool }) => (
+                {aiToolsData.aiTools.edges.map(({ node: tool }) => (
                   <ToolCard
                     key={tool.id}
                     title={tool.title}
@@ -116,7 +130,7 @@ export default async function CategoryPage({ params }: PageProps) {
                     slug={tool.slug}
                     previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
                     logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                    isVerified={Math.random() > 0.5}
+                    isVerified={Math.random() > 0.5} // This is a placeholder. You might want to add a verified field to your API response
                   />
                 ))}
               </div>
