@@ -34,11 +34,22 @@ interface AITool {
     };
   };
   affiliateLink?: string;
+  modifiedGmt: string;
 }
 
 async function getAITool(slug: string): Promise<AITool | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const res = await fetch(`${apiUrl}/api/ai-tools/${slug}`, { next: { revalidate: 3600 } })
+  // Add cache-busting query parameter
+  const timestamp = Date.now();
+  const res = await fetch(
+    `${apiUrl}/api/ai-tools/${slug}?t=${timestamp}`, 
+    { 
+      cache: 'no-store', // Disable caching completely
+      next: { 
+        revalidate: 0 // Disable Next.js cache
+      }
+    }
+  )
   if (!res.ok) {
     return null
   }
@@ -65,31 +76,25 @@ export default async function ToolPage({ params }: PageProps) {
   const formatContent = (content: string) => {
     // Split content into sections based on headings
     const sections = content.split(/(?=<h[1-6])/);
-  
+
     return sections.map((section, index) => {
-      // Check if the section is a FAQ
-      if (section.includes('[rakmath_faq]')) {
-        const faqContent = section.match(/\[rakmath_faq\]([\s\S]*?)\[\/rakmath_faq\]/);
-        if (faqContent && faqContent[1]) {
-          const faqItems = faqContent[1].split(/(?=\[rakmath_faq_item)/);
+      // Check if the section contains a list
+      if (section.includes('<ul>')) {
+        const listItems = section.match(/<li>(.*?)<\/li>/g);
+        if (listItems) {
           return (
-            <div key={index} className="mt-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Frequently Asked Questions</h2>
-              <Accordion type="single" collapsible className="w-full">
-                {faqItems.map((item, faqIndex) => {
-                  const question = item.match(/question="(.*?)"/)?.[1];
-                  const answer = item.match(/answer="(.*?)"/)?.[1];
-                  if (question && answer) {
-                    return (
-                      <AccordionItem key={faqIndex} value={`item-${faqIndex}`}>
-                        <AccordionTrigger>{question}</AccordionTrigger>
-                        <AccordionContent>{answer}</AccordionContent>
-                      </AccordionItem>
-                    );
-                  }
-                  return null;
+            <div key={index}>
+              <ul className="space-y-4 my-4 list-none">
+                {listItems.map((item, i) => {
+                  const content = item.replace(/<li>|<\/li>/g, '');
+                  return (
+                    <li key={i} className="flex items-start">
+                      <CheckCircle2 className="h-5 w-5 text-[#24cc90] mr-3 mt-0.5 flex-shrink-0" />
+                      <span dangerouslySetInnerHTML={{ __html: content }} />
+                    </li>
+                  );
                 })}
-              </Accordion>
+              </ul>
             </div>
           );
         }
@@ -97,10 +102,6 @@ export default async function ToolPage({ params }: PageProps) {
 
       // Format regular content
       const formattedSection = section
-        // Format lists
-        .replace(/<ul>/g, '<ul className="space-y-4 my-4 list-none">')
-        .replace(/<li>/g, '<li className="flex items-start"><CheckCircle2 className="h-5 w-5 text-[#24cc90] mr-3 mt-0.5 flex-shrink-0" /><span>')
-        .replace(/<\/li>/g, '</span></li>')
         // Format headings
         .replace(/<h2>/g, '<h2 className="text-2xl font-bold text-white mt-8 mb-4">')
         .replace(/<h3>/g, '<h3 className="text-xl font-semibold text-white mt-6 mb-3">')
@@ -110,6 +111,24 @@ export default async function ToolPage({ params }: PageProps) {
       return <div key={index} dangerouslySetInnerHTML={{ __html: formattedSection }} />;
     });
   };
+
+  // Format the modified date
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      }).format(date);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Recently updated';
+    }
+  }
 
   return (
     <ApolloWrapper>
@@ -138,9 +157,9 @@ export default async function ToolPage({ params }: PageProps) {
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
                 {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
-                  <Link 
+                    <Link 
                     href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
-                    className="inline-block bg-purple-900 text-white text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-800 transition-colors mb-6"
+                    className="inline-block bg-primary text-white text-sm font-semibold px-3 py-1 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 mb-6"
                   >
                     {tool.aiToolCategories.nodes[0].name}
                   </Link>
@@ -158,7 +177,7 @@ export default async function ToolPage({ params }: PageProps) {
                     href={tool.affiliateLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-purple-600 text-primary-foreground shadow hover:bg-purple-700 h-9 px-4 py-2"
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-white shadow hover:bg-primary/90 h-9 px-4 py-2"
                   >
                     Explore Website
                     <ExternalLink className="ml-2 h-4 w-4" />
@@ -188,6 +207,13 @@ export default async function ToolPage({ params }: PageProps) {
                 <div className="prose prose-invert max-w-none">
                   {formatContent(tool.content)}
                 </div>
+              )}
+
+              {/* Last updated information */}
+              {tool.modifiedGmt && (
+                <p className="text-sm text-gray-400 mt-8">
+                  Last updated: {formatDate(tool.modifiedGmt)}
+                </p>
               )}
             </div>
 
