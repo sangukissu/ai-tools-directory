@@ -85,7 +85,7 @@ export function CategoriesSection() {
   if (isLoading) {
     return (
       <section className="py-20 bg-black">
-        <div className="container px-4 mx-auto">
+        <div className="max-w-7xl px-4 mx-auto">
           <div className="animate-pulse space-y-8">
             <div className="h-8 w-64 bg-gray-800 rounded"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -107,7 +107,7 @@ export function CategoriesSection() {
 
   return (
     <section className="py-20 bg-black">
-      <div className="container px-4 mx-auto">
+      <div className="max-w-7xl px-4 mx-auto">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-300 mb-4">Categories</h2>

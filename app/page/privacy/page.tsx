@@ -1,5 +1,13 @@
-export default function PrivacyPolicyPage() {
-    return (
+import { NextPage } from 'next'
+import Head from 'next/head'
+
+const PrivacyPolicyPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Privacy Policy - FindMyAITool</title>
+        <meta name="description" content="Read our Privacy Policy to understand how we collect, use, and protect your personal information at FindMyAITool." />
+      </Head>
       <div className="min-h-screen bg-black text-white">
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
@@ -37,10 +45,11 @@ export default function PrivacyPolicyPage() {
             <p className="mt-4">
               Last updated: {new Date().toLocaleDateString()}
             </p>
-          </div>
+            </div>
         </div>
       </div>
-    )
-  }
-  
-  
+    </>
+  )
+}
+
+export default PrivacyPolicyPage

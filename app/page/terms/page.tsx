@@ -1,5 +1,13 @@
-export default function TermsOfServicePage() {
-    return (
+import { NextPage } from 'next'
+import Head from 'next/head'
+
+const TermsOfServicePage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Terms of Service - FindMyAITool</title>
+        <meta name="description" content="Read our Terms of Service to understand the rules and regulations governing the use of FindMyAITool." />
+      </Head>
       <div className="min-h-screen bg-black text-white">
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
@@ -45,10 +53,12 @@ export default function TermsOfServicePage() {
             <p className="mt-4">
               Last updated: {new Date().toLocaleDateString()}
             </p>
-          </div>
+            </div>
         </div>
       </div>
-    )
-  }
-  
-  
+    </>
+  )
+}
+
+export default TermsOfServicePage
+

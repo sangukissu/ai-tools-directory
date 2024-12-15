@@ -1,5 +1,13 @@
-export default function AboutPage() {
-    return (
+import { NextPage } from 'next'
+import Head from 'next/head'
+
+const AboutPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>About FindMyAITool</title>
+        <meta name="description" content="Learn about FindMyAITool, your premier destination for discovering and comparing cutting-edge AI tools." />
+      </Head>
       <div className="min-h-screen bg-black text-white">
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8">About FindMyAITool</h1>
@@ -22,7 +30,9 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
-    )
-  }
-  
-  
+    </>
+  )
+}
+
+export default AboutPage
+

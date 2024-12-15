@@ -87,7 +87,7 @@ export default async function Home() {
         <CategoriesSection />
         
         <section className="py-20">
-          <div className="container px-4 mx-auto">
+          <div className="max-w-7xl px-4 mx-auto">
             {error ? (
               <Alert variant="destructive" className="bg-red-900 border-red-800">
                 <AlertCircle className="h-4 w-4" />
@@ -112,7 +112,7 @@ export default async function Home() {
                 <SubmitToolButton />
               </Alert>
             ) : (
-              <div className="max-w-screen-2xl mx-auto">
+              <div className="max-w-7xl mx-auto">
                 <h2 className="text-3xl font-bold text-white mb-8">Featured AI Tools</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {aiToolsData.edges.map(({ node: tool }) => (

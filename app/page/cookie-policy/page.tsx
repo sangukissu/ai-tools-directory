@@ -1,5 +1,13 @@
-export default function CookiePolicyPage() {
-    return (
+import { NextPage } from 'next'
+import Head from 'next/head'
+
+const CookiePolicyPage: NextPage = () => {
+  return (
+    <>
+      <Head>
+        <title>Cookie Policy - FindMyAITool</title>
+        <meta name="description" content="Learn about how FindMyAITool uses cookies and similar technologies to recognize you when you visit our website." />
+      </Head>
       <div className="min-h-screen bg-black text-white">
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl font-bold mb-8">Cookie Policy</h1>
@@ -37,10 +45,11 @@ export default function CookiePolicyPage() {
             <p className="mt-4">
               Last updated: {new Date().toLocaleDateString()}
             </p>
-          </div>
+            </div>
         </div>
       </div>
-    )
-  }
-  
-  
+    </>
+  )
+}
+
+export default CookiePolicyPage
