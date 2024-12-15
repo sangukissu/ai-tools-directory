@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server'
 import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
-const GET_ALL_AI_TOOLS = gql`
-  query GetAllAITools($first: Int!, $after: String) {
-    aiTools(first: $first, after: $after) {
+const GET_AI_TOOLS = gql`
+  query GetAITools($first: Int!, $after: String) {
+    aiTools(first: $first, after: $after, where: { status: PUBLISH }) {
       pageInfo {
         hasNextPage
         endCursor
@@ -34,12 +34,12 @@ const GET_ALL_AI_TOOLS = gql`
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const first = parseInt(searchParams.get('first') || '100', 10)
+  const first = parseInt(searchParams.get('first') || '20', 10)
   const after = searchParams.get('after')
 
   try {
     const { data } = await client.query({
-      query: GET_ALL_AI_TOOLS,
+      query: GET_AI_TOOLS,
       variables: { 
         first,
         after
@@ -59,3 +59,4 @@ export async function GET(request: Request) {
     )
   }
 }
+

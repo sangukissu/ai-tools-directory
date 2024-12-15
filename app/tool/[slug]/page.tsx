@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import { ExternalLink, ChevronRight } from 'lucide-react'
 import { CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
@@ -49,12 +48,10 @@ interface RelatedTool {
 
 async function getAITool(slug: string): Promise<AITool | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const timestamp = Date.now();
   const res = await fetch(
-    `${apiUrl}/api/ai-tools/${slug}`, 
-    { 
-      cache: 'no-store',
-      next: { revalidate: 0 }
-    }
+    `${apiUrl}/api/ai-tools/${slug}?t=${timestamp}`, 
+    { cache: 'no-store' }
   )
   if (!res.ok) {
     return null
@@ -66,10 +63,7 @@ async function getRelatedTools(category: string, currentToolSlug: string): Promi
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const res = await fetch(
     `${apiUrl}/api/ai-tools?first=100&category=${encodeURIComponent(category)}`,
-    { 
-      cache: 'no-store',
-      next: { revalidate: 0 }
-    }
+    { cache: 'no-store' }
   );
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
