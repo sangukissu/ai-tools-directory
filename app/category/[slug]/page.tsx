@@ -29,36 +29,37 @@ interface AITool {
 }
 
 interface AIToolsResponse {
-  category: AIToolCategory;
-  aiTools: {
-    pageInfo: {
-      hasNextPage: boolean;
-      endCursor: string;
-    };
-    edges: {
-      node: AITool;
-    }[];
+  pageInfo: {
+    hasNextPage: boolean;
+    endCursor: string;
   };
+  edges: {
+    node: AITool;
+  }[];
 }
 
-async function getAIToolsByCategory(category: string, first: number = 12, after: string | null = null): Promise<AIToolsResponse> {
+async function getAllTools(first: number = 100): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const url = new URL(`${apiUrl}/api/ai-tools`);
-  url.searchParams.append('first', first.toString());
-  if (after) url.searchParams.append('after', after);
-  url.searchParams.append('category', category);
+  const res = await fetch(
+    `${apiUrl}/api/ai-tools?first=${first}`,
+    { next: { revalidate: 3600 } }
+  );
 
-  const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
-  
-  if (res.status === 404) {
-    notFound();
-  }
-  
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
-  
+
   return res.json();
+}
+
+function filterToolsByCategory(tools: AIToolsResponse, categorySlug: string): AITool[] {
+  return tools.edges
+    .map(edge => edge.node)
+    .filter(tool => 
+      tool.aiToolCategories.nodes.some(
+        category => category.slug.toLowerCase() === categorySlug.toLowerCase()
+      )
+    );
 }
 
 interface PageProps {
@@ -66,21 +67,29 @@ interface PageProps {
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  let aiToolsData: AIToolsResponse | null = null;
+  let allTools: AIToolsResponse | null = null;
   let error: Error | null = null;
 
   try {
-    aiToolsData = await getAIToolsByCategory(params.slug);
+    allTools = await getAllTools();
   } catch (e) {
     error = e instanceof Error ? e : new Error('An unknown error occurred');
     console.error('Error fetching AI Tools:', error);
   }
 
-  if (!aiToolsData || !aiToolsData.category) {
+  if (!allTools) {
     return notFound();
   }
 
-  const categoryName = aiToolsData.category.name;
+  const filteredTools = filterToolsByCategory(allTools, params.slug);
+  
+  if (filteredTools.length === 0) {
+    return notFound();
+  }
+
+  const categoryName = filteredTools[0].aiToolCategories.nodes.find(
+    cat => cat.slug.toLowerCase() === params.slug.toLowerCase()
+  )?.name || params.slug;
 
   return (
     <ApolloWrapper>
@@ -111,7 +120,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 </AlertDescription>
                 <TryAgainButton />
               </Alert>
-            ) : !aiToolsData.aiTools.edges || aiToolsData.aiTools.edges.length === 0 ? (
+            ) : filteredTools.length === 0 ? (
               <Alert className="bg-yellow-900 border-yellow-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>No AI Tools Found</AlertTitle>
@@ -122,7 +131,7 @@ export default async function CategoryPage({ params }: PageProps) {
               </Alert>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {aiToolsData.aiTools.edges.map(({ node: tool }) => (
+                {filteredTools.map((tool) => (
                   <ToolCard
                     key={tool.id}
                     title={tool.title}
@@ -130,7 +139,7 @@ export default async function CategoryPage({ params }: PageProps) {
                     slug={tool.slug}
                     previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
                     logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                    isVerified={Math.random() > 0.5} // This is a placeholder. You might want to add a verified field to your API response
+                    isVerified={Math.random() > 0.5}
                   />
                 ))}
               </div>
