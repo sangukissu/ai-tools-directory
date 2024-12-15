@@ -8,6 +8,7 @@ import TryAgainButton from '@/components/TryAgainButton'
 import SubmitToolButton from '@/components/SubmitToolButton'
 import { generateMetadata, generateWebPageSchema } from '@/lib/seo-utils'
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 
 interface AIToolCategory {
   name: string;
@@ -46,7 +47,10 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
   if (after) url.searchParams.append('after', after);
   url.searchParams.append('category', 'all');
 
-  const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
+  const res = await fetch(url.toString(), { 
+    cache: 'no-store',
+    next: { revalidate: 0 }
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
@@ -54,12 +58,12 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
 }
 
 export const metadata: Metadata = generateMetadata({
-  title: "Discover AI Tools for Your Business",
+  title: "Geekdroid | Discover AI Tools for Your Business",
   description: "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs.",
   canonical: "https://geekdroid.in"
 })
 
-export default async function Home() {
+async function AIToolsSection() {
   let aiToolsData: AIToolsResponse | null = null;
   let error: Error | null = null;
 
@@ -70,6 +74,58 @@ export default async function Home() {
     console.error('Error fetching AI Tools:', error);
   }
 
+  if (error) {
+    return (
+      <Alert variant="destructive" className="bg-red-900 border-red-800">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error Loading AI Tools</AlertTitle>
+        <AlertDescription>
+          We're sorry, but there was an error loading the AI tools. Please try again later.
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-2 text-sm opacity-75">
+              Error details: {error.message}
+            </div>
+          )}
+        </AlertDescription>
+        <TryAgainButton />
+      </Alert>
+    );
+  }
+
+  if (!aiToolsData || !aiToolsData.edges || aiToolsData.edges.length === 0) {
+    return (
+      <Alert className="bg-yellow-900 border-yellow-800">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No AI Tools Found</AlertTitle>
+        <AlertDescription>
+          No AI tools are currently available. Please check back later or submit your own tool.
+        </AlertDescription>
+        <SubmitToolButton />
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto">
+      <h2 className="text-3xl font-bold text-white mb-8">All AI Tools</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {aiToolsData.edges.map(({ node: tool }) => (
+          <ToolCard
+            key={tool.id}
+            title={tool.title}
+            category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
+            slug={tool.slug}
+            previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
+            logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
+            isVerified={Math.random() > 0.5}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
   const webPageSchema = generateWebPageSchema(
     "Discover AI Tools for Your Business",
     "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs.",
@@ -88,47 +144,9 @@ export default async function Home() {
         
         <section className="py-20">
           <div className="max-w-7xl px-4 mx-auto">
-            {error ? (
-              <Alert variant="destructive" className="bg-red-900 border-red-800">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error Loading AI Tools</AlertTitle>
-                <AlertDescription>
-                  We're sorry, but there was an error loading the AI tools. Please try again later.
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="mt-2 text-sm opacity-75">
-                      Error details: {error.message}
-                    </div>
-                  )}
-                </AlertDescription>
-                <TryAgainButton />
-              </Alert>
-            ) : !aiToolsData || !aiToolsData.edges || aiToolsData.edges.length === 0 ? (
-              <Alert className="bg-yellow-900 border-yellow-800">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>No AI Tools Found</AlertTitle>
-                <AlertDescription>
-                  No AI tools are currently available. Please check back later or submit your own tool.
-                </AlertDescription>
-                <SubmitToolButton />
-              </Alert>
-            ) : (
-              <div className="max-w-7xl mx-auto">
-                <h2 className="text-3xl font-bold text-white mb-8">Featured AI Tools</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {aiToolsData.edges.map(({ node: tool }) => (
-                    <ToolCard
-                      key={tool.id}
-                      title={tool.title}
-                      category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
-                      slug={tool.slug}
-                      previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                      logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                      isVerified={Math.random() > 0.5}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            <Suspense fallback={<div>Loading AI Tools...</div>}>
+              <AIToolsSection />
+            </Suspense>
           </div>
         </section>
       </div>

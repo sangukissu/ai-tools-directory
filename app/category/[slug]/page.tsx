@@ -42,7 +42,10 @@ async function getAllTools(first: number = 100): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const res = await fetch(
     `${apiUrl}/api/ai-tools?first=${first}`,
-    { next: { revalidate: 3600 } }
+    { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    }
   );
 
   if (!res.ok) {
