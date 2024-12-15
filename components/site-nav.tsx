@@ -24,9 +24,6 @@ interface AITool {
 const navItems = [
   { name: "Home", href: "/" },
   { name: "Categories", href: "/categories" },
-  { name: "GPT Store", href: "/gpt-store" },
-  { name: "Shorts Video", href: "/shorts-video" },
-  { name: "Blog", href: "/blog" },
   { name: "Submit AI Tool", href: "/submit" },
 ]
 
