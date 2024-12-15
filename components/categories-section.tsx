@@ -117,7 +117,7 @@ export function CategoriesSection() {
           </div>
           <Link 
             href="/categories" 
-            className="flex items-center text-purple-500 hover:text-purple-400 transition-colors"
+            className="flex items-center text-white hover:text-gray-300 transition-colors"
           >
             View All
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -139,7 +139,7 @@ export function CategoriesSection() {
                 href={`/category/${category.slug}`}
                 className="group"
               >
-                <Card className="h-full bg-[#0d1117] border-[#1d2433] transition-all duration-300 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10">
+                <Card className="h-full bg-[#0d1117] border-[#1d2433] transition-all duration-300 hover:border-white hover:shadow-lg hover:shadow-white/10">
                   <div className="p-6 space-y-4">
                     <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${meta.color} to-transparent flex items-center justify-center transition-transform group-hover:scale-110`}>
                       <Icon className="h-8 w-8" />
@@ -147,7 +147,7 @@ export function CategoriesSection() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xl font-semibold text-white">{category.name}</h3>
-                        <ArrowRight className="h-5 w-5 text-gray-400 transition-transform group-hover:translate-x-1" />
+                        <ArrowRight className="h-5 w-5 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-white" />
                       </div>
                       <p className="text-gray-400 text-sm">
                         {meta.description}
