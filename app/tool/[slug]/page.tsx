@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/accordion"
 import { ToolCard } from "@/components/tool-card"
 import { PromoteTool } from "@/components/promote-tool";
+import { SEO } from '@/components/seo'
+import Head from 'next/head'
 
 interface AIToolCategory {
   name: string;
@@ -151,8 +153,49 @@ export default async function ToolPage({ params }: { params: { slug: string } })
     }
   }
 
+  const toolUrl = `https://geekdroid.in/tool/${tool.slug}`
+  const cleanDescription = cleanExcerpt(tool.excerpt).replace(/<\/?[^>]+(>|$)/g, "")
+
   return (
     <ApolloWrapper>
+      <SEO 
+        title={tool.title}
+        description={cleanDescription}
+        canonical={toolUrl}
+        ogImage={tool.featuredImage?.node?.sourceUrl}
+      />
+      <Head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "TechArticle",
+              "headline": tool.title,
+              "description": cleanDescription,
+              "image": tool.featuredImage?.node?.sourceUrl,
+              "datePublished": tool.modifiedGmt,
+              "dateModified": tool.modifiedGmt,
+              "author": {
+                "@type": "Organization",
+                "name": "Geekdroid"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "Geekdroid",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://geekdroid.in/logo.png"
+                }
+              },
+              "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": toolUrl
+              }
+            })
+          }}
+        />
+      </Head>
       <div className="min-h-screen bg-black text-white">
         <main className="container mx-auto px-4 py-8 max-w-7xl">
           <nav className="flex items-center space-x-2 text-sm mb-4 bg-[#0d1117] rounded-xl border border-[#1d2433] px-4 py-2">

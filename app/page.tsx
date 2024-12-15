@@ -6,6 +6,8 @@ import { AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import TryAgainButton from '@/components/TryAgainButton'
 import SubmitToolButton from '@/components/SubmitToolButton'
+import { SEO } from '@/components/seo'
+import Head from 'next/head'
 
 interface AIToolCategory {
   name: string;
@@ -42,8 +44,6 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
   const url = new URL(`${apiUrl}/api/ai-tools`);
   url.searchParams.append('first', first.toString());
   if (after) url.searchParams.append('after', after);
-  
-  // Add a default category or fetch all categories
   url.searchParams.append('category', 'all');
 
   const res = await fetch(url.toString(), { next: { revalidate: 3600 } });
@@ -52,8 +52,6 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
   }
   return res.json();
 }
-
-
 
 export default async function Home() {
   let aiToolsData: AIToolsResponse | null = null;
@@ -66,8 +64,36 @@ export default async function Home() {
     console.error('Error fetching AI Tools:', error);
   }
 
+  const pageTitle = "Discover AI Tools for Your Business"
+  const pageDescription = "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs."
+  const pageUrl = "https://geekdroid.in"
+
   return (
     <ApolloWrapper>
+      <SEO 
+        title={pageTitle}
+        description={pageDescription}
+        canonical={pageUrl}
+      />
+      <Head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              "name": pageTitle,
+              "description": pageDescription,
+              "url": pageUrl,
+              "isPartOf": {
+                "@type": "WebSite",
+                "name": "Geekdroid",
+                "url": "https://geekdroid.in"
+              }
+            })
+          }}
+        />
+      </Head>
       <div className="min-h-screen bg-black">
         <HeroSection />
         <CategoriesSection />
@@ -79,7 +105,7 @@ export default async function Home() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error Loading AI Tools</AlertTitle>
                 <AlertDescription>
-                  We&apos;re sorry, but there was an error loading the AI tools. Please try again later.
+                  We're sorry, but there was an error loading the AI tools. Please try again later.
                   {process.env.NODE_ENV === 'development' && (
                     <div className="mt-2 text-sm opacity-75">
                       Error details: {error.message}

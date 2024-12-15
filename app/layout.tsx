@@ -2,12 +2,13 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import { SiteNav } from '@/components/site-nav'
 import { Footer } from '@/components/footer'
+import { WebSiteSchema } from '@/components/seo'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'AI Tools Directory',
-  description: 'Discover the best AI tools for your business',
+  title: 'Geekdroid | AI Tools Directory',
+  description: 'Discover and compare the best AI tools for your business',
 }
 
 export default function RootLayout({
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <WebSiteSchema />
         <div className="flex flex-col min-h-screen">
           <SiteNav />
           <main className="flex-grow">
