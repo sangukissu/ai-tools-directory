@@ -3,8 +3,12 @@ import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
 const GET_AI_TOOLS = gql`
-  query GetAITools($first: Int!, $after: String, $category: String) {
-    aiTools(first: $first, after: $after, where: { categoryName: $category }) {
+  query GetAITools($first: Int!, $after: String, $category: ID) {
+    aiToolCategory(id: $category, idType: SLUG) {
+      name
+      slug
+    }
+    aiTools(first: $first, after: $after, where: { categoryIn: [$category] }) {
       pageInfo {
         hasNextPage
         endCursor
@@ -26,6 +30,7 @@ const GET_AI_TOOLS = gql`
               sourceUrl
             }
           }
+          affiliateLink
         }
       }
     }
@@ -44,12 +49,15 @@ export async function GET(request: Request) {
       variables: { 
         first, 
         after, 
-        category: category === 'all' ? null : category 
+        category: category || null 
       },
       fetchPolicy: 'no-cache'
     })
 
-    return NextResponse.json(data.aiTools)
+    return NextResponse.json({
+      category: data.aiToolCategory,
+      aiTools: data.aiTools
+    })
   } catch (error) {
     console.error('Error fetching AI Tools:', error)
     return NextResponse.json(
