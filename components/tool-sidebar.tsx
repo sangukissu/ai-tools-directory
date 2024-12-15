@@ -1,17 +1,41 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Flag, Facebook, Twitter, LinkedinIcon as LinkedIn, LinkIcon, Check } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState, useEffect } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ToolCard } from "@/components/tool-card"
+
+interface AIToolCategory {
+  name: string;
+  slug: string;
+}
+
+interface RelatedTool {
+  id: string;
+  title: string;
+  slug: string;
+  featuredImage: {
+    node: {
+      sourceUrl: string;
+    };
+  };
+  aiToolCategories: {
+    nodes: AIToolCategory[];
+  };
+}
 
 interface ToolSidebarProps {
   toolName: string;
   toolSlug: string;
+  relatedTools: RelatedTool[];
 }
 
-export function ToolSidebar({ toolName, toolSlug }: ToolSidebarProps) {
+export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarProps) {
   const [copied, setCopied] = useState(false)
   const [shareUrl, setShareUrl] = useState(`/tool/${toolSlug}`)
   const [mounted, setMounted] = useState(false)
@@ -31,28 +55,8 @@ export function ToolSidebar({ toolName, toolSlug }: ToolSidebarProps) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  // Don't render share buttons until after client-side hydration
   if (!mounted) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-gray-900 p-4 rounded-lg animate-pulse">
-          <div className="h-6 bg-gray-800 rounded w-24 mb-4"></div>
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-2">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-10 bg-gray-800 rounded"></div>
-              ))}
-            </div>
-            <div className="h-10 bg-gray-800 rounded"></div>
-          </div>
-        </div>
-        <div className="bg-gray-900 p-4 rounded-lg animate-pulse">
-          <div className="h-6 bg-gray-800 rounded w-32 mb-4"></div>
-          <div className="h-4 bg-gray-800 rounded w-full mb-4"></div>
-          <div className="h-10 bg-gray-800 rounded"></div>
-        </div>
-      </div>
-    )
+    return null; // or a loading placeholder
   }
 
   return (
@@ -143,6 +147,26 @@ export function ToolSidebar({ toolName, toolSlug }: ToolSidebarProps) {
           </Button>
         </div>
       </div>
+
+      {/* Related Tools Section */}
+      {relatedTools.length > 0 && (
+        <div className="bg-gray-900 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4 text-white">Related AI Tools</h2>
+          <div className="space-y-4">
+            {relatedTools.map((tool) => (
+              <ToolCard
+                key={tool.id}
+                title={tool.title}
+                category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
+                slug={tool.slug}
+                previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
+                logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
+                isVerified={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-gray-900 p-4 rounded-lg">
         <h2 className="text-xl font-semibold mb-4 text-white">Submit Your Tool</h2>

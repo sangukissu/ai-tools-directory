@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { ToolCard } from "@/components/tool-card"
 
 interface AIToolCategory {
   name: string;
@@ -37,15 +38,26 @@ interface AITool {
   modifiedGmt: string;
 }
 
+interface RelatedTool {
+  id: string;
+  title: string;
+  slug: string;
+  featuredImage: {
+    node: {
+      sourceUrl: string;
+    };
+  };
+  aiToolCategories: {
+    nodes: AIToolCategory[];
+  };
+}
+
 async function getAITool(slug: string): Promise<AITool | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  // Add cache-busting query parameter
   const timestamp = Date.now();
   const res = await fetch(
     `${apiUrl}/api/ai-tools/${slug}?t=${timestamp}`, 
-    { 
-      cache: 'no-store', // Disable caching completely
-    }
+    { cache: 'no-store' }
   )
   if (!res.ok) {
     return null
@@ -53,31 +65,44 @@ async function getAITool(slug: string): Promise<AITool | null> {
   return res.json()
 }
 
-
+async function getRelatedTools(category: string, currentToolSlug: string): Promise<AITool[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const res = await fetch(
+    `${apiUrl}/api/ai-tools?first=100&category=${encodeURIComponent(category)}`,
+    { cache: 'no-store' }
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data.edges
+    .map((edge: { node: AITool }) => edge.node)
+    .filter((tool: AITool) => tool.slug !== currentToolSlug)
+    .slice(0, 3);
+}
 
 interface PageProps {
   params: { slug: string }
 }
 
-export default async function ToolPage({ params }: PageProps) {
+export default async function ToolPage({ params }: { params: { slug: string } }) {
   const tool = await getAITool(params.slug)
 
   if (!tool) {
     notFound()
   }
 
-  // Function to remove "Read more" link from excerpt
+  const category = tool.aiToolCategories.nodes[0]?.slug
+  const relatedTools = category ? await getRelatedTools(category, tool.slug) : []
+
   const cleanExcerpt = (excerpt: string) => {
     return excerpt.replace(/<a\s+[^>]*>Read more<\/a>/i, '').trim();
   }
 
-  // Function to format the content with proper HTML structure
   const formatContent = (content: string) => {
-    // Split content into sections based on headings
     const sections = content.split(/(?=<h[1-6])/);
 
     return sections.map((section, index) => {
-      // Check if the section contains a list
       if (section.includes('<ul>')) {
         const listItems = section.match(/<li>(.*?)<\/li>/g);
         if (listItems) {
@@ -99,19 +124,15 @@ export default async function ToolPage({ params }: PageProps) {
         }
       }
 
-      // Format regular content
       const formattedSection = section
-        // Format headings
         .replace(/<h2>/g, '<h2 className="text-2xl font-bold text-white mt-8 mb-4">')
         .replace(/<h3>/g, '<h3 className="text-xl font-semibold text-white mt-6 mb-3">')
-        // Format paragraphs
         .replace(/<p>/g, '<p className="text-gray-300 mb-4">');
 
       return <div key={index} dangerouslySetInnerHTML={{ __html: formattedSection }} />;
     });
   };
 
-  // Format the modified date
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -133,7 +154,6 @@ export default async function ToolPage({ params }: PageProps) {
     <ApolloWrapper>
       <div className="min-h-screen bg-black text-white">
         <main className="container mx-auto px-4 py-8">
-          {/* Breadcrumb */}
           <nav className="flex items-center space-x-2 text-sm mb-8">
             <Link href="/" className="text-gray-400 hover:text-white">
               Home
@@ -151,14 +171,13 @@ export default async function ToolPage({ params }: PageProps) {
           </nav>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Main Content */}
             <div className="md:col-span-2">
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
                 {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
-                    <Link 
+                  <Link 
                     href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
-                    className="inline-block bg-primary text-white text-sm font-semibold px-3 py-1 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-primary/90 mb-6"
+                    className="inline-block bg-purple-900 text-white text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-800 transition-colors mb-6"
                   >
                     {tool.aiToolCategories.nodes[0].name}
                   </Link>
@@ -186,7 +205,6 @@ export default async function ToolPage({ params }: PageProps) {
                 )}
               </div>
 
-              {/* Tool Preview */}
               {tool.featuredImage && tool.featuredImage.node && tool.featuredImage.node.sourceUrl && (
                 <Card className="mb-8 bg-gray-900 border-gray-800">
                   <CardContent className="p-0">
@@ -201,14 +219,12 @@ export default async function ToolPage({ params }: PageProps) {
                 </Card>
               )}
 
-              {/* Tool Content */}
               {tool.content && (
                 <div className="prose prose-invert max-w-none">
                   {formatContent(tool.content)}
                 </div>
               )}
 
-              {/* Last updated information */}
               {tool.modifiedGmt && (
                 <p className="text-sm text-gray-400 mt-8">
                   Last updated: {formatDate(tool.modifiedGmt)}
@@ -216,9 +232,12 @@ export default async function ToolPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Sidebar */}
             <div className="md:col-span-1">
-              <ToolSidebar toolName={tool.title} toolSlug={tool.slug} />
+              <ToolSidebar 
+                toolName={tool.title} 
+                toolSlug={tool.slug}
+                relatedTools={relatedTools}
+              />
             </div>
           </div>
         </main>
