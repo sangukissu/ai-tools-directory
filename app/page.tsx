@@ -6,8 +6,8 @@ import { AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import TryAgainButton from '@/components/TryAgainButton'
 import SubmitToolButton from '@/components/SubmitToolButton'
-import { SEO } from '@/components/seo'
-import Head from 'next/head'
+import { generateMetadata, generateWebPageSchema } from '@/lib/seo-utils'
+import { Metadata } from 'next'
 
 interface AIToolCategory {
   name: string;
@@ -53,6 +53,12 @@ async function getAITools(first: number = 10, after: string | null = null): Prom
   return res.json();
 }
 
+export const metadata: Metadata = generateMetadata({
+  title: "Discover AI Tools for Your Business",
+  description: "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs.",
+  canonical: "https://geekdroid.in"
+})
+
 export default async function Home() {
   let aiToolsData: AIToolsResponse | null = null;
   let error: Error | null = null;
@@ -64,36 +70,18 @@ export default async function Home() {
     console.error('Error fetching AI Tools:', error);
   }
 
-  const pageTitle = "Discover AI Tools for Your Business"
-  const pageDescription = "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs."
-  const pageUrl = "https://geekdroid.in"
+  const webPageSchema = generateWebPageSchema(
+    "Discover AI Tools for Your Business",
+    "Explore our curated collection of AI tools to streamline your workflow and find the perfect solution for your business needs.",
+    "https://geekdroid.in"
+  )
 
   return (
     <ApolloWrapper>
-      <SEO 
-        title={pageTitle}
-        description={pageDescription}
-        canonical={pageUrl}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
       />
-      <Head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebPage",
-              "name": pageTitle,
-              "description": pageDescription,
-              "url": pageUrl,
-              "isPartOf": {
-                "@type": "WebSite",
-                "name": "Geekdroid",
-                "url": "https://geekdroid.in"
-              }
-            })
-          }}
-        />
-      </Head>
       <div className="min-h-screen bg-black">
         <HeroSection />
         <CategoriesSection />

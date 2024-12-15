@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import { ExternalLink, ChevronRight } from 'lucide-react'
 import { CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
@@ -6,17 +5,9 @@ import Image from "next/image"
 import ApolloWrapper from '@/components/ApolloWrapper'
 import { notFound } from 'next/navigation'
 import { ToolSidebar } from '@/components/tool-sidebar'
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import { ToolCard } from "@/components/tool-card"
-import { PromoteTool } from "@/components/promote-tool";
-import { SEO } from '@/components/seo'
-import Head from 'next/head'
+import { PromoteTool } from "@/components/promote-tool"
+import { Metadata } from 'next'
+import { generateMetadata as generateSEOMetadata, generateTechArticleSchema, cleanExcerpt } from '@/lib/seo-utils'
 
 interface AIToolCategory {
   name: string;
@@ -84,8 +75,22 @@ async function getRelatedTools(category: string, currentToolSlug: string): Promi
     .slice(0, 3);
 }
 
-interface PageProps {
-  params: { slug: string }
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const tool = await getAITool(params.slug)
+  
+  if (!tool) {
+    return {}
+  }
+
+  const cleanDescription = cleanExcerpt(tool.excerpt).replace(/<\/?[^>]+(>|$)/g, "")
+  const toolUrl = `https://geekdroid.in/tool/${tool.slug}`
+
+  return generateSEOMetadata({
+    title: tool.title,
+    description: cleanDescription,
+    canonical: toolUrl,
+    ogImage: tool.featuredImage?.node?.sourceUrl
+  })
 }
 
 export default async function ToolPage({ params }: { params: { slug: string } }) {
@@ -97,10 +102,6 @@ export default async function ToolPage({ params }: { params: { slug: string } })
 
   const category = tool.aiToolCategories.nodes[0]?.slug
   const relatedTools = category ? await getRelatedTools(category, tool.slug) : []
-
-  const cleanExcerpt = (excerpt: string) => {
-    return excerpt.replace(/<a\s+[^>]*>Read more<\/a>/i, '').trim();
-  }
 
   const formatContent = (content: string) => {
     const sections = content.split(/(?=<h[1-6])/);
@@ -156,46 +157,21 @@ export default async function ToolPage({ params }: { params: { slug: string } })
   const toolUrl = `https://geekdroid.in/tool/${tool.slug}`
   const cleanDescription = cleanExcerpt(tool.excerpt).replace(/<\/?[^>]+(>|$)/g, "")
 
+  const techArticleSchema = generateTechArticleSchema({
+    title: tool.title,
+    description: cleanDescription,
+    image: tool.featuredImage?.node?.sourceUrl || '',
+    datePublished: tool.modifiedGmt,
+    dateModified: tool.modifiedGmt,
+    url: toolUrl
+  })
+
   return (
     <ApolloWrapper>
-      <SEO 
-        title={tool.title}
-        description={cleanDescription}
-        canonical={toolUrl}
-        ogImage={tool.featuredImage?.node?.sourceUrl}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(techArticleSchema) }}
       />
-      <Head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "TechArticle",
-              "headline": tool.title,
-              "description": cleanDescription,
-              "image": tool.featuredImage?.node?.sourceUrl,
-              "datePublished": tool.modifiedGmt,
-              "dateModified": tool.modifiedGmt,
-              "author": {
-                "@type": "Organization",
-                "name": "Geekdroid"
-              },
-              "publisher": {
-                "@type": "Organization",
-                "name": "Geekdroid",
-                "logo": {
-                  "@type": "ImageObject",
-                  "url": "https://geekdroid.in/logo.png"
-                }
-              },
-              "mainEntityOfPage": {
-                "@type": "WebPage",
-                "@id": toolUrl
-              }
-            })
-          }}
-        />
-      </Head>
       <div className="min-h-screen bg-black text-white">
         <main className="container mx-auto px-4 py-8 max-w-7xl">
           <nav className="flex items-center space-x-2 text-sm mb-4 bg-[#0d1117] rounded-xl border border-[#1d2433] px-4 py-2">
