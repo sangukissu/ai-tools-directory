@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Flag, Facebook, Twitter, LinkedinIcon as LinkedIn, LinkIcon } from 'lucide-react'
+import { Flag, Facebook, Twitter, LinkedinIcon as LinkedIn, LinkIcon, Check } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState } from 'react'
 
@@ -89,10 +89,12 @@ export function ToolSidebar({ toolName, toolSlug }: ToolSidebarProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleCopyLink}
-                    className="flex items-center justify-center p-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
+                    className={`flex items-center justify-center p-2 text-white rounded-md transition-colors ${
+                      copied ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'
+                    }`}
                   >
-                    <LinkIcon className="h-5 w-5" />
-                    <span className="sr-only">Copy link</span>
+                    {copied ? <Check className="h-5 w-5" /> : <LinkIcon className="h-5 w-5" />}
+                    <span className="sr-only">{copied ? 'Link copied' : 'Copy link'}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
