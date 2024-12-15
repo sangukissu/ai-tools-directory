@@ -5,6 +5,8 @@ import { Flag, Facebook, Twitter, LinkedinIcon as LinkedIn, LinkIcon, Check } fr
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState, useEffect } from 'react'
 import { CompactToolCard } from "./compact-tool-card"
+import { AdSense } from '@/components/AdSense'
+import { adsenseConfig } from '@/lib/adsense-config'
 
 interface AIToolCategory {
   name: string;
@@ -59,7 +61,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
     <div className="space-y-6">
       {/* Related Tools Section */}
       {relatedTools.length > 0 && (
-        <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-2 py-4">
+        <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
           <h2 className="text-lg font-semibold text-white mb-4 px-1">Related AI Tools</h2>
           <div className="space-y-1">
             {relatedTools.map((tool) => (
@@ -74,6 +76,10 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
           </div>
         </div>
       )}
+
+      <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
+        <AdSense slot={adsenseConfig.slots.sidebarFixed} style={{ display: 'block', width: '300px', height: '250px' }} />
+      </div>
 
       <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
         <h2 className="text-lg font-semibold text-white mb-4">Share This Tool</h2>
@@ -169,7 +175,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
         <p className="text-sm text-gray-400 mb-4">
           Have an AI tool that's not listed? Submit it to our directory!
         </p>
-        <Button className="w-full bg-primary hover:bg-blue-700 text-white rounded-xl h-11">
+        <Button className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl h-11">
           Submit AI Tool
         </Button>
       </div>

@@ -3,8 +3,19 @@ import { gql } from '@apollo/client'
 import client from '@/lib/apollo-client'
 
 const GET_AI_TOOLS = gql`
-  query GetAITools($first: Int!, $after: String) {
-    aiTools(first: $first, after: $after, where: { status: PUBLISH }) {
+  query GetAITools($first: Int!, $after: String, $category: String!) {
+    aiTools(
+      first: $first, 
+      after: $after, 
+      where: { 
+        status: PUBLISH,
+        taxQuery: {
+          taxArray: [
+            { taxonomy: AI_TOOL_CATEGORY, operator: IN, terms: [$category], field: SLUG }
+          ]
+        }
+      }
+    ) {
       pageInfo {
         hasNextPage
         endCursor
@@ -36,13 +47,19 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const first = parseInt(searchParams.get('first') || '20', 10)
   const after = searchParams.get('after')
+  const category = searchParams.get('category')
+
+  if (!category) {
+    return NextResponse.json({ error: 'Category parameter is required' }, { status: 400 })
+  }
 
   try {
     const { data } = await client.query({
       query: GET_AI_TOOLS,
       variables: { 
         first,
-        after
+        after,
+        category
       },
       fetchPolicy: 'no-cache'
     })

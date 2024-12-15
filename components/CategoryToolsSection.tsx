@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import React from 'react'
 import { ToolCard } from "@/components/tool-card"
 import { Button } from "@/components/ui/button"
 import { AlertCircle } from 'lucide-react'
@@ -40,10 +41,11 @@ interface AIToolsResponse {
   }[];
 }
 
-async function getAITools(first: number = 20, after: string | null = null): Promise<AIToolsResponse> {
+async function getAIToolsByCategory(category: string, first: number = 20, after: string | null = null): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const url = new URL(`${apiUrl}/api/ai-tools`);
   url.searchParams.append('first', first.toString());
+  url.searchParams.append('category', category);
   if (after) url.searchParams.append('after', after);
 
   const res = await fetch(url.toString());
@@ -53,18 +55,30 @@ async function getAITools(first: number = 20, after: string | null = null): Prom
   return res.json();
 }
 
-export function AIToolsSection() {
-  const [tools, setTools] = useState<AITool[]>([]);
+interface CategoryToolsSectionProps {
+  initialTools: AITool[];
+  category: string;
+  initialPageInfo: {
+    hasNextPage: boolean;
+    endCursor: string;
+  };
+}
+
+export function CategoryToolsSection({ initialTools, category, initialPageInfo }: CategoryToolsSectionProps) {
+  const [tools, setTools] = useState<AITool[]>(initialTools);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [endCursor, setEndCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState(initialPageInfo.hasNextPage);
+  const [endCursor, setEndCursor] = useState<string | null>(initialPageInfo.endCursor);
 
-  const loadTools = async (isInitial: boolean = false) => {
+  const loadMoreTools = async () => {
     setLoading(true);
     try {
-      const data = await getAITools(20, isInitial ? null : endCursor);
-      setTools(prevTools => isInitial ? data.edges.map(edge => edge.node) : [...prevTools, ...data.edges.map(edge => edge.node)]);
+      const data = await getAIToolsByCategory(category, 20, endCursor);
+      const newTools = data.edges.map(edge => edge.node).filter(tool => 
+        tool.aiToolCategories.nodes.some(cat => cat.slug.toLowerCase() === category.toLowerCase())
+      );
+      setTools(prevTools => [...prevTools, ...newTools]);
       setHasNextPage(data.pageInfo.hasNextPage);
       setEndCursor(data.pageInfo.endCursor);
     } catch (e) {
@@ -74,9 +88,10 @@ export function AIToolsSection() {
     }
   };
 
-  useEffect(() => {
-    loadTools(true);
-  }, []);
+  // Filter initial tools to ensure they belong to the correct category
+  const filteredTools = tools.filter(tool => 
+    tool.aiToolCategories.nodes.some(cat => cat.slug.toLowerCase() === category.toLowerCase())
+  );
 
   if (error) {
     return (
@@ -96,13 +111,13 @@ export function AIToolsSection() {
     );
   }
 
-  if (tools.length === 0 && !loading) {
+  if (filteredTools.length === 0 && !loading) {
     return (
       <Alert className="bg-yellow-900 border-yellow-800">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>No AI Tools Found</AlertTitle>
         <AlertDescription>
-          No AI tools are currently available. Please check back later or submit your own tool.
+          No AI tools are currently available in this category. Please check back later or submit your own tool.
         </AlertDescription>
         <SubmitToolButton />
       </Alert>
@@ -110,15 +125,13 @@ export function AIToolsSection() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h2 className="text-3xl font-bold text-white mb-8">All AI Tools</h2>
+    <div className="space-y-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {tools.map((tool, index) => (
-          <>
+        {filteredTools.map((tool, index) => (
+          <React.Fragment key={tool.id}>
             <ToolCard
-              key={tool.id}
               title={tool.title}
-              category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
+              category={tool.aiToolCategories.nodes[0]?.name || category}
               slug={tool.slug}
               previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
               logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
@@ -129,15 +142,15 @@ export function AIToolsSection() {
                 <AdSense slot={adsenseConfig.slots.inContentFixed} />
               </div>
             )}
-          </>
+          </React.Fragment>
         ))}
       </div>
       {hasNextPage && (
         <div className="flex justify-center mt-8">
           <Button
-            onClick={() => loadTools()}
+            onClick={loadMoreTools}
             disabled={loading}
-            className="bg-primary hover:bg-primary/90 text-white"
+            className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             {loading ? 'Loading...' : 'Load More'}
           </Button>

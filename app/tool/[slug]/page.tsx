@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button"
 import { ExternalLink, ChevronRight } from 'lucide-react'
 import { CheckCircle2 } from 'lucide-react'
 import Link from "next/link"
@@ -8,6 +9,8 @@ import { ToolSidebar } from '@/components/tool-sidebar'
 import { PromoteTool } from "@/components/promote-tool"
 import { Metadata } from 'next'
 import { generateMetadata as generateSEOMetadata, generateTechArticleSchema, cleanExcerpt } from '@/lib/seo-utils'
+import { AdSense } from '@/components/AdSense'
+import { adsenseConfig } from '@/lib/adsense-config'
 
 interface AIToolCategory {
   name: string;
@@ -48,10 +51,12 @@ interface RelatedTool {
 
 async function getAITool(slug: string): Promise<AITool | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const timestamp = Date.now();
   const res = await fetch(
-    `${apiUrl}/api/ai-tools/${slug}?t=${timestamp}`, 
-    { cache: 'no-store' }
+    `${apiUrl}/api/ai-tools/${slug}`, 
+    { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    }
   )
   if (!res.ok) {
     return null
@@ -63,7 +68,10 @@ async function getRelatedTools(category: string, currentToolSlug: string): Promi
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const res = await fetch(
     `${apiUrl}/api/ai-tools?first=100&category=${encodeURIComponent(category)}`,
-    { cache: 'no-store' }
+    { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    }
   );
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
@@ -250,6 +258,8 @@ export default async function ToolPage({ params }: { params: { slug: string } })
                   </p>
                 )}
               </div>
+
+              <AdSense slot={adsenseConfig.slots.responsive.toolPage} />
 
               {/* Add the promote section */}
               <PromoteTool toolName={tool.title} toolSlug={tool.slug} />

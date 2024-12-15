@@ -103,7 +103,7 @@ export function SiteNav() {
         🏆 Ranking #1 in AI Tools – Submit Your Tool Today! 🚀
       </div>
       <header className="sticky top-0 z-50 border-b bg-black border-gray-800">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center space-x-2">
             <Image
               src="/placeholder.svg"

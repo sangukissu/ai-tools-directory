@@ -4,6 +4,8 @@ import { SiteNav } from '@/components/site-nav'
 import { Footer } from '@/components/footer'
 import { Metadata } from 'next'
 import { generateWebSiteSchema } from '@/lib/seo-utils'
+import { adsenseConfig } from '@/lib/adsense-config'
+import Script from 'next/script'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -27,6 +29,14 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(generateWebSiteSchema()) }}
         />
+        {adsenseConfig.enabled && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseConfig.client}`}
+            crossOrigin="anonymous"
+            strategy="lazyOnload"
+          />
+        )}
       </head>
       <body className={inter.className}>
         <div className="flex flex-col min-h-screen">

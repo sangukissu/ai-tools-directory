@@ -5,6 +5,8 @@ import ApolloWrapper from '@/components/ApolloWrapper'
 import { generateMetadata, generateWebPageSchema } from '@/lib/seo-utils'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
+import { AdSense } from '@/components/AdSense'
+import { adsenseConfig } from '@/lib/adsense-config'
 
 export const metadata: Metadata = generateMetadata({
   title: "Geekdroid | Discover AI Tools for Your Business",
@@ -27,6 +29,7 @@ export default function Home() {
       />
       <div className="min-h-screen bg-black">
         <HeroSection />
+        <AdSense slot={adsenseConfig.slots.responsive.home} />
         <CategoriesSection />
         
         <section className="py-20">
