@@ -94,8 +94,8 @@ export default async function CategoryPage({ params }: PageProps) {
   return (
     <ApolloWrapper>
       <div className="min-h-screen bg-black">
-        <main className="container mx-auto px-4 py-8">
-          <nav className="flex items-center space-x-2 text-sm mb-8">
+        <main className="container mx-auto px-4 py-8 max-w-7xl">
+          <nav className="flex items-center space-x-2 text-sm mb-4 bg-[#0d1117] rounded-xl border border-[#1d2433] px-4 py-2">
             <Link href="/" className="text-gray-400 hover:text-white">
               Home
             </Link>
@@ -103,7 +103,7 @@ export default async function CategoryPage({ params }: PageProps) {
             <span className="text-white">{categoryName}</span>
           </nav>
           
-          <div className="max-w-screen-2xl mx-auto">
+          <div className="mx-auto bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
             <h1 className="text-3xl font-bold text-white mb-8">{categoryName} AI Tools</h1>
             
             {error ? (

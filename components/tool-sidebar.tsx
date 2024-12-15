@@ -1,14 +1,10 @@
 'use client'
 
-import Link from 'next/link'
-import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Flag, Facebook, Twitter, LinkedinIcon as LinkedIn, LinkIcon, Check } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ToolCard } from "@/components/tool-card"
+import { CompactToolCard } from "./compact-tool-card"
 
 interface AIToolCategory {
   name: string;
@@ -56,13 +52,31 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
   }
 
   if (!mounted) {
-    return null; // or a loading placeholder
+    return null;
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-900 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4 text-white">Tool Actions</h2>
+      {/* Related Tools Section */}
+      {relatedTools.length > 0 && (
+        <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-2 py-4">
+          <h2 className="text-lg font-semibold text-white mb-4 px-1">Related AI Tools</h2>
+          <div className="space-y-1">
+            {relatedTools.map((tool) => (
+              <CompactToolCard
+                key={tool.id}
+                title={tool.title}
+                category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
+                slug={tool.slug}
+                logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
+        <h2 className="text-lg font-semibold text-white mb-4">Share This Tool</h2>
         <div className="space-y-4">
           {/* Social Share Buttons */}
           <div className="grid grid-cols-4 gap-2">
@@ -73,7 +87,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
                     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center p-2 bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
+                    className="flex items-center justify-center p-2.5 bg-[#1a1f2c] hover:bg-[#252b3b] text-white rounded-xl transition-colors"
                   >
                     <Facebook className="h-5 w-5" />
                     <span className="sr-only">Share on Facebook</span>
@@ -90,7 +104,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center p-2 bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
+                    className="flex items-center justify-center p-2.5 bg-[#1a1f2c] hover:bg-[#252b3b] text-white rounded-xl transition-colors"
                   >
                     <Twitter className="h-5 w-5" />
                     <span className="sr-only">Share on Twitter</span>
@@ -107,7 +121,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
                     href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(toolName)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center p-2 bg-primary hover:bg-primary/90 text-white rounded-md transition-colors"
+                    className="flex items-center justify-center p-2.5 bg-[#1a1f2c] hover:bg-[#252b3b] text-white rounded-xl transition-colors"
                   >
                     <LinkedIn className="h-5 w-5" />
                     <span className="sr-only">Share on LinkedIn</span>
@@ -122,12 +136,14 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleCopyLink}
-                    className={`flex items-center justify-center p-2 text-white rounded-md transition-colors ${
-                      copied ? 'bg-secondary hover:bg-secondary/80' : 'bg-primary hover:bg-primary/90'
+                    className={`flex items-center justify-center p-2.5 rounded-xl transition-colors ${
+                      copied 
+                        ? 'bg-green-600/20 text-green-500 hover:bg-green-600/30' 
+                        : 'bg-[#1a1f2c] hover:bg-[#252b3b] text-white'
                     }`}
                   >
                     {copied ? <Check className="h-5 w-5" /> : <LinkIcon className="h-5 w-5" />}
-                    <span className="sr-only">{copied ? 'Link copied' : 'Copy link'}</span>
+                    <span className="sr-only">{copied ? 'Copied!' : 'Copy link'}</span>
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -140,7 +156,7 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
           {/* Report Issue Button */}
           <Button 
             variant="outline" 
-            className="w-full justify-start bg-gray-800 hover:bg-gray-700 text-white border-gray-700"
+            className="w-full justify-start bg-[#1a1f2c] hover:bg-[#252b3b] text-white border-[#2d3548] rounded-xl h-11"
           >
             <Flag className="mr-2 h-4 w-4" />
             Report Issue
@@ -148,32 +164,12 @@ export function ToolSidebar({ toolName, toolSlug, relatedTools }: ToolSidebarPro
         </div>
       </div>
 
-      {/* Related Tools Section */}
-      {relatedTools.length > 0 && (
-        <div className="bg-gray-900 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-white">Related AI Tools</h2>
-          <div className="space-y-4">
-            {relatedTools.map((tool) => (
-              <ToolCard
-                key={tool.id}
-                title={tool.title}
-                category={tool.aiToolCategories.nodes[0]?.name || "AI Tool"}
-                slug={tool.slug}
-                previewImage={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                logo={tool.featuredImage?.node?.sourceUrl || "/placeholder.svg"}
-                isVerified={false}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="bg-gray-900 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4 text-white">Submit Your Tool</h2>
+      <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
+        <h2 className="text-lg font-semibold text-white mb-3">Submit Your Tool</h2>
         <p className="text-sm text-gray-400 mb-4">
           Have an AI tool that's not listed? Submit it to our directory!
         </p>
-        <Button className="w-full bg-accent hover:bg-accent/90 text-white">
+        <Button className="w-full bg-primary hover:bg-blue-700 text-white rounded-xl h-11">
           Submit AI Tool
         </Button>
       </div>

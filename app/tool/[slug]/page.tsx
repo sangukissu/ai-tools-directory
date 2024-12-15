@@ -14,6 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { ToolCard } from "@/components/tool-card"
+import { PromoteTool } from "@/components/promote-tool";
 
 interface AIToolCategory {
   name: string;
@@ -153,8 +154,8 @@ export default async function ToolPage({ params }: { params: { slug: string } })
   return (
     <ApolloWrapper>
       <div className="min-h-screen bg-black text-white">
-        <main className="container mx-auto px-4 py-8">
-          <nav className="flex items-center space-x-2 text-sm mb-8">
+        <main className="container mx-auto px-4 py-8 max-w-7xl">
+          <nav className="flex items-center space-x-2 text-sm mb-4 bg-[#0d1117] rounded-xl border border-[#1d2433] px-4 py-2">
             <Link href="/" className="text-gray-400 hover:text-white">
               Home
             </Link>
@@ -170,69 +171,72 @@ export default async function ToolPage({ params }: { params: { slug: string } })
             <span className="text-white">{tool.title}</span>
           </nav>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
-                {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
-                  <Link 
-                    href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
-                    className="inline-block bg-purple-900 text-white text-sm font-semibold px-3 py-1 rounded-full hover:bg-purple-800 transition-colors mb-6"
-                  >
-                    {tool.aiToolCategories.nodes[0].name}
-                  </Link>
-                )}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-3 space-y-8">
+              <div className="bg-[#0d1117] rounded-2xl border border-[#1d2433] p-5">
+                <div className="mb-8">
+                  <h1 className="text-4xl font-bold mb-4">{tool.title}</h1>
+                  {tool.aiToolCategories && tool.aiToolCategories.nodes && tool.aiToolCategories.nodes[0] && (
+                    <Link 
+                      href={`/category/${tool.aiToolCategories.nodes[0].slug}`}
+                      className="inline-block text-white text-sm font-semibold px-3 py-1 rounded-md transition-colors mb-6 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90"
+                    >
+                      {tool.aiToolCategories.nodes[0].name}
+                    </Link>
+                  )}
 
-                {tool.excerpt && (
-                  <div 
-                    className="text-gray-300 mb-8 text-lg leading-relaxed" 
-                    dangerouslySetInnerHTML={{ __html: cleanExcerpt(tool.excerpt) }} 
-                  />
-                )}
+                  {tool.excerpt && (
+                    <div 
+                      className="text-gray-300 mb-8 text-lg leading-relaxed" 
+                      dangerouslySetInnerHTML={{ __html: cleanExcerpt(tool.excerpt) }} 
+                    />
+                  )}
 
-                {tool.affiliateLink ? (
-                  <Link 
-                    href={tool.affiliateLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-white shadow hover:bg-primary/90 h-9 px-4 py-2"
-                  >
-                    Explore Website
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </Link>
-                ) : (
-                  <span className="text-gray-400">No affiliate link available</span>
-                )}
-              </div>
+                  {tool.affiliateLink ? (
+                    <Link 
+                      href={tool.affiliateLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-white shadow hover:bg-primary/90 h-9 px-4 py-2"
+                    >
+                      Explore Website
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Link>
+                  ) : (
+                    <span className="text-gray-400">No affiliate link available</span>
+                  )}
+                </div>
 
-              {tool.featuredImage && tool.featuredImage.node && tool.featuredImage.node.sourceUrl && (
-                <Card className="mb-8 bg-gray-900 border-gray-800">
-                  <CardContent className="p-0">
+                {tool.featuredImage && tool.featuredImage.node && tool.featuredImage.node.sourceUrl && (
+                  <div className="mb-8 overflow-hidden rounded-xl">
                     <Image
                       src={tool.featuredImage.node.sourceUrl}
                       alt={`${tool.title} Preview`}
                       width={800}
                       height={600}
-                      className="w-full rounded-lg"
+                      className="w-full"
                     />
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                )}
 
-              {tool.content && (
-                <div className="prose prose-invert max-w-none">
-                  {formatContent(tool.content)}
-                </div>
-              )}
+                {tool.content && (
+                  <div className="prose prose-invert max-w-none">
+                    {formatContent(tool.content)}
+                  </div>
+                )}
 
-              {tool.modifiedGmt && (
-                <p className="text-sm text-gray-400 mt-8">
-                  Last updated: {formatDate(tool.modifiedGmt)}
-                </p>
-              )}
+                {tool.modifiedGmt && (
+                  <p className="text-sm text-gray-400 mt-8">
+                    Last updated: {formatDate(tool.modifiedGmt)}
+                  </p>
+                )}
+              </div>
+
+              {/* Add the promote section */}
+              <PromoteTool toolName={tool.title} toolSlug={tool.slug} />
             </div>
 
-            <div className="md:col-span-1">
+            <div className="lg:col-span-1">
               <ToolSidebar 
                 toolName={tool.title} 
                 toolSlug={tool.slug}

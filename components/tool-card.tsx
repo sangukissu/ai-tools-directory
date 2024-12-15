@@ -56,9 +56,9 @@ export function ToolCard({ title, category, slug, previewImage, logo, isVerified
               </Badge>
             )}
           </h3>
-          <Link href={`/category/${encodeURIComponent(category.toLowerCase())}`} className="text-xs text-gray-400 hover:text-gray-300 truncate">
-            {category}
-          </Link>
+          <Link href={`/category/${category.toLowerCase().replace(/\s+/g, '-')}`} className="text-xs text-gray-400 hover:text-gray-300 truncate">
+  {category}
+</Link>
         </div>
       </div>
     </Link>
