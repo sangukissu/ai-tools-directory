@@ -37,19 +37,21 @@ interface AIToolsResponse {
 
 async function getCategoryTools(category: string, first: number = 20): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-  const res = await fetch(
-    `${apiUrl}/api/ai-tools?first=${first}&category=${encodeURIComponent(category)}`,
-    { 
-      cache: 'no-store',
-      next: { revalidate: 0 }
-    }
-  );
+  const url = `${apiUrl}/api/ai-tools?first=${first}&category=${encodeURIComponent(category)}`;
+  console.log('Fetching category tools from:', url);
+  
+  const res = await fetch(url, { 
+    cache: 'no-store',
+    next: { revalidate: 0 }
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
 
-  return res.json();
+  const data = await res.json();
+  console.log('API Response:', data);
+  return data;
 }
 
 interface PageProps {
@@ -62,12 +64,14 @@ export default async function CategoryPage({ params }: PageProps) {
 
   try {
     categoryTools = await getCategoryTools(params.slug);
+    console.log('Fetched category tools:', categoryTools);
   } catch (e) {
     error = e instanceof Error ? e : new Error('An unknown error occurred');
     console.error('Error fetching AI Tools:', error);
   }
 
   if (!categoryTools || categoryTools.edges.length === 0) {
+    console.log('No category tools found, returning 404');
     return notFound();
   }
 
@@ -75,6 +79,13 @@ export default async function CategoryPage({ params }: PageProps) {
   const categoryName = initialTools[0]?.aiToolCategories.nodes.find(
     cat => cat.slug.toLowerCase() === params.slug.toLowerCase()
   )?.name || params.slug;
+
+  console.log('Rendering category page with:', {
+    categoryName,
+    initialToolsCount: initialTools.length,
+    hasNextPage: categoryTools.pageInfo.hasNextPage,
+    endCursor: categoryTools.pageInfo.endCursor
+  });
 
   return (
     <ApolloWrapper>
