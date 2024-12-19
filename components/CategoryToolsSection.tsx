@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import React from 'react'
 import { ToolCard } from "@/components/tool-card"
 import { Button } from "@/components/ui/button"
@@ -11,35 +11,9 @@ import SubmitToolButton from '@/components/SubmitToolButton'
 import { AdSense } from '@/components/AdSense'
 import { adsenseConfig } from '@/lib/adsense-config'
 
-interface AIToolCategory {
-  name: string;
-  slug: string;
-}
+//import { useState, useCallback } from 'react'; //removed as useState and useEffect are already imported
+//import Button from './Button'; //removed as Button is already imported from "@/components/ui/button"
 
-interface AITool {
-  id: string;
-  title: string;
-  excerpt: string;
-  slug: string;
-  aiToolCategories: {
-    nodes: AIToolCategory[];
-  };
-  featuredImage: {
-    node: {
-      sourceUrl: string;
-    };
-  };
-}
-
-interface AIToolsResponse {
-  pageInfo: {
-    hasNextPage: boolean;
-    endCursor: string;
-  };
-  edges: {
-    node: AITool;
-  }[];
-}
 
 async function getAIToolsByCategory(category: string, first: number = 20, after: string | null = null): Promise<AIToolsResponse> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -53,6 +27,34 @@ async function getAIToolsByCategory(category: string, first: number = 20, after:
     throw new Error(`Failed to fetch AI Tools: ${res.status} ${res.statusText}`);
   }
   return res.json();
+}
+
+interface AITool {
+  id: string;
+  name: string;
+  aiToolCategories: {
+    nodes: {
+      slug: string;
+      name: string;
+    }[];
+  };
+  featuredImage: {
+    node: {
+      sourceUrl: string;
+    } | null;
+  } | null;
+  slug: string;
+  title: string;
+}
+
+interface AIToolsResponse {
+  edges: {
+    node: AITool;
+  }[];
+  pageInfo: {
+    hasNextPage: boolean;
+    endCursor: string | null;
+  };
 }
 
 interface CategoryToolsSectionProps {
@@ -71,16 +73,26 @@ export function CategoryToolsSection({ initialTools, category, initialPageInfo }
   const [hasNextPage, setHasNextPage] = useState(initialPageInfo.hasNextPage);
   const [endCursor, setEndCursor] = useState<string | null>(initialPageInfo.endCursor);
 
+  useEffect(() => {
+    console.log('Initial state:', { tools: tools.length, hasNextPage, endCursor });
+  }, []);
+
   const loadMoreTools = async () => {
     setLoading(true);
     try {
       const data = await getAIToolsByCategory(category, 20, endCursor);
+      console.log('Fetched data:', data);
       const newTools = data.edges.map(edge => edge.node).filter(tool => 
         tool.aiToolCategories.nodes.some(cat => cat.slug.toLowerCase() === category.toLowerCase())
       );
       setTools(prevTools => [...prevTools, ...newTools]);
       setHasNextPage(data.pageInfo.hasNextPage);
       setEndCursor(data.pageInfo.endCursor);
+      console.log('Updated state:', { 
+        toolsCount: tools.length + newTools.length, 
+        hasNextPage: data.pageInfo.hasNextPage, 
+        endCursor: data.pageInfo.endCursor 
+      });
     } catch (e) {
       setError(e instanceof Error ? e : new Error('An unknown error occurred'));
     } finally {
